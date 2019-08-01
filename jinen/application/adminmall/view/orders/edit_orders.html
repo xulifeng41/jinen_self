@@ -1,0 +1,143 @@
+{include file='layout/header1'}
+{if $type=='return' }
+<div class="layui-form-item">
+    <label class="layui-form-label">退货类型</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" readonly  style= "background-color:transparent;border:0;" {eq name="$info.type" value="1"} value="仅退款" {else/} value="退款退货" {/eq}>
+     </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">退货原因</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" readonly  style= "background-color:transparent;border:0;"{eq name="$info.reason" value="1"} value="仅退款" {else/} value="退款退货" {/eq}>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">退货进度</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" readonly  style= "background-color:transparent;border:0;" {eq name="$info.progress" value="1"} value="提交申请,等待审核" {else/} value="同意退款" {/eq}>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">退款金额</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.amount}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">退还积分</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.integral}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">退货说明</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.remark}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">退货上传图片</label>
+    <div class="layui-input-block">
+        <div class="layui-upload-list">
+            <img class="layui-upload-img" id="demo1" style="height: 5rem;" src="{$info.images}">
+            <p id="demoText"></p>
+        </div>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">申请时间</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.create_time}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+{elseif $type=='delivery' /}
+{empty name="info"}
+<div class="layui-form-item">
+    <label class="layui-form-label">暂无相关信息</label>
+</div>
+{else /}
+<div class="layui-form-item">
+    <label class="layui-form-label">配送员电话</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.deliverier_tel}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">配送员姓名</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.deliverier_name}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">配送时间</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.delivery_time}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">配送状态</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input"  readonly  style= "background-color:transparent;border:0;" {eq name="$info.status" value="1"} value="正在配送中" {else/} value="配送完成" {/eq}>
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">收货人姓名</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.customer_name}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">收货人电话</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.customer_tel}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">开始配送</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.create_time}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+{/empty}
+{elseif $type=='comment' /}
+<div class="layui-form-item">
+    <label class="layui-form-label">对商品的打分</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.to_good}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">对供应商的打分</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.to_supplier}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">对配送员的打分</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.to_delivery}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">用户评价</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.remark}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+<div class="layui-form-item">
+    <label class="layui-form-label">评价时间</label>
+    <div class="layui-input-block">
+        <input type="text" autocomplete="off" class="layui-input" value="{$info.create_time}" readonly  style= "background-color:transparent;border:0;">
+    </div>
+</div>
+{/if}
+
+
+<script src="/static/layui/layui/layui.js"></script>
+<script>
+
+
+</script>
+
+{include file='layout/footer1' /}

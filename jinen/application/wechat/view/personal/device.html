@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico"><script src="https://img.highcharts.com.cn/jquery/jquery-1.8.3.min.js"></script>
+    <script src="/static/js/highcharts.js"></script>
+    <script src="https://img.highcharts.com.cn/highcharts/modules/exporting.js"></script>
+    <script src="https://img.highcharts.com.cn/highcharts/modules/oldie.js"></script>
+    <script src="https://img.highcharts.com.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+    <script src="/static/js/weui/jquery-weui.js"></script>
+    <title>油烟值list</title>
+</head>
+<body>
+<div id="container" style="height:400px"></div>
+<div class="page-bd">
+    <div class="weui-cells" id="pdiv" style="display: none;">
+        <div class="weui-cell">
+            <div class="weui-cell__bd">
+                <p>油烟值</p>
+            </div>
+            <div class="weui-cell__ft">产生时间</div>
+        </div>
+    </div>
+</div>
+<div class="weui-loadmore" id="loading" style="display: none;">
+    <i class="weui-loading"></i>
+    <span class="weui-loadmore__tips">正在加载</span>
+</div>
+<script>
+    var page=1;//当前页
+    $(document).ready(jiance(),getbalancelist());
+    setInterval("jiance();",60000);
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            getbalancelist();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function getbalancelist(){
+        var num="{$num}";
+        var deviceid="{$deviceid}";
+        $.post('{:url("personal/jianceajax")}',{num:num,deviceid:deviceid,page:page,type:2},function(data)
+        {
+            // alert(data);
+            if(data[1].length)
+            {
+                $("#pdiv").css("display","inline");
+                $("#loading").css("display","inline");
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //     //处理数据部分 .......
+                var str='';
+                for (var i = 0; i < data[1].length; i++) {
+                    var time=data[1][i].create_time;
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>"+data[1][i].soot+"</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+time+"</div>";
+                    str+="</div>";
+                }
+                $("#pdiv").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+            {
+                $("#container").html("没有相关数据").css('text-align','center');
+            }
+
+        },'json')
+        page++;
+    }
+
+
+    function jiance()
+    {
+        var chart = null;
+        var num="{$num}";
+        var deviceid="{$deviceid}";
+        $.getJSON('{:url("personal/jianceajax")}',{num:num,deviceid:deviceid,type:1},function (data) {
+            // list
+            if(data[1].length)
+            {
+                chart = Highcharts.chart('container', {
+                    chart: {
+                        zoomType: 'x',
+                    },
+                    title: {
+                        text: '设备油烟监测值走势图'
+                    },
+                    subtitle: {
+                        text: '今日平均值:'+data['avg']
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                            millisecond: '%H:%M:%S.%L',
+                            second: '%H:%M:%S',
+                            minute: '%H:%M',
+                            hour: '%H:%M',
+                            day: '%m-%d',
+                            week: '%m-%d',
+                            month: '%Y-%m',
+                            year: '%Y'
+                        }
+                    },
+                    tooltip: {
+                        dateTimeLabelFormats: {
+                            millisecond: '%H:%M:%S.%L',
+                            second: '%H:%M:%S',
+                            minute: '%H:%M',
+                            hour: '%H:%M',
+                            day: '%Y-%m-%d',
+                            week: '%m-%d',
+                            month: '%Y-%m',
+                            year: '%Y'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: '油烟',
+                            rotation: 0,
+                            align: 'high',
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+                    series: [{
+                        type: 'area',
+                        name: '此刻油烟值',
+                        data: data[1]
+                    }]
+                });
+            }else{
+                $("#container").html("今日没有相关数据").css('text-align','center');
+            }
+        });
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{include file='layout/header'}
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">标题</label>
+        <div class="layui-input-block">
+            <input type="text" name="title" lay-verify="required" autocomplete="off" class="layui-input" value="{$menu.title|default=''}" >
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">url</label>
+        <div class="layui-input-block">
+            <input type="text" name="url" lay-verify="required|path" autocomplete="off" class="layui-input" value="{$menu.url|default=''}" placeholder="操作的路由" >
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">操作</label>
+        <div class="layui-input-block">
+            <input type="text" name="action" lay-verify="required|action" autocomplete="off" class="layui-input" value="{$menu.action|default=''}" placeholder="控制器/方法" >
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序</label>
+        <div class="layui-input-block">
+            <input type="text" name="sort" lay-verify="sort" autocomplete="off" placeholder="0~100,数字越小越靠前" value="{$menu.sort|default=''}" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">状态</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_show" lay-skin="switch" lay-filter="switchTest" {neq name="menu.is_show" value="隐藏" } checked{/neq}  lay-text="显示|隐藏">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">菜单</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_menu" lay-skin="switch" lay-filter="switchTest" {neq name="menu.is_menu" value="2" } checked{/neq} lay-text="是|否">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即修改</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+    var id = {$id};
+    layui.use('form', function(){
+        var form = layui.form;
+        form.verify({
+            sort: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(isNaN(value)||value>101||value<0){
+                    return '排序请0~100输入数字';
+                }
+            },
+            path:function(value,item){
+                if((/[\u4e00-\u9fa5]/.test(value))){
+                    return 'url路由中不能含有中文！';
+                }
+            },
+            action:function(value,item){
+                if((/[\u4e00-\u9fa5]/.test(value))){
+                    return '操作中不能含有中文！';
+                }
+                if(value.indexOf("/")==-1){
+                    return '操作中控制器和方法要用"/"隔开'
+                }
+            }
+        });
+
+        form.on('submit(demo1)', function(data){
+            var datas = data.field;
+            if(id!=0){
+                datas.id = id;
+            }
+            datas.parent_id = '{$parent_id}';
+            $.post('{:url("admin_menu/add_menu")}',datas,function(res){
+                if(res.code==200){
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                }else{
+                    return layer.msg(res.msg);
+                }
+            },'json')
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+
+    });
+
+
+
+</script>
+{include file='layout/footer'}

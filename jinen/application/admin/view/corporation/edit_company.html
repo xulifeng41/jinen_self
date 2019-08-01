@@ -1,0 +1,123 @@
+{include file='layout/header1' /}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">公司名</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" lay-verify="required" autocomplete="off" class="layui-input" value="{$corporation['name']}">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">公司logo</label>
+        <div class="layui-input-block">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn" id="test1">上传图片</button>
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" src="{$corporation['logo']}" id="demo1" style="height: 5rem;">
+                    <p id="demoText"></p>
+                </div>
+                <input type="hidden" name="logo" id="tupian" lay-verify="logo" value="{$corporation['logo']}">
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">负责人</label>
+        <div class="layui-input-block">
+            <select name="legal_person" lay-filter="shi" lay-verify="required">
+                <option value="0">请选择公司负责人</option>
+                {foreach $dailis as $daili}
+                <option value="{$daili['id']}" {eq name="$corporation['legal_person']" value="$daili['id']"}selected{/eq}>{$daili['real_name']}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-form-mid layui-word-aux">如果没有相关责任人，可以先添加相关代理商管理员</div>
+    </div>
+
+
+    <div class="layui-form-mid layui-word-aux">公众号相关设置</div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">appid</label>
+        <div class="layui-input-block">
+            <input type="text" name="appid" value="{$corporation['appid']}" lay-verify="required" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">secret</label>
+        <div class="layui-input-block">
+            <input type="text" name="appsecret" value="{$corporation['appsecret']}" lay-verify="required" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即添加</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+    layui.use(['form','upload'], function(){
+        var form = layui.form
+        var $ = layui.jquery
+            ,upload = layui.upload;
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '{:url("version/upload")}'
+            ,field:'image'
+            ,before: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    $('#demo1').attr('src', result); //图片链接（base64）
+                });
+            }
+            ,done: function(res){
+                //如果上传失败
+                if(res.code > 0){
+                    return layer.msg('上传失败');
+                }
+                //上传成功
+                $('#tupian').val(res.data.src);
+                layer.msg('上传成功！');
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        //验证
+        form.verify({
+            logo: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(value==null||value==''||value==undefined){
+                    return '请上传公司的logo';
+                }
+            }
+        });
+
+        form.on('submit(demo1)', function(data){
+            var datas = data.field;
+            datas.id = '{$corporation["id"]}';
+            $.post('{:url("corporation/edit_company")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+    });
+
+</script>
+
+{include file='layout/footer1' /}

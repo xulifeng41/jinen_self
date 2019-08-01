@@ -1,0 +1,289 @@
+{include file='layout/header1'}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="good_name" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品类别</label>
+        <div class="layui-input-block">
+            <select name="cata_id" lay-filter="shi" lay-verify="required">
+                <option value="0">请选择商品类别</option>
+                {foreach $catess as $cate}
+                <option value="{$cate['id']}">{$cate['cat_name']}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">商品简介</label>
+        <div class="layui-input-block">
+            <textarea placeholder="请输入内容" name="good_brief" class="layui-textarea"></textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">商品图片</label>
+        <div class="layui-input-block">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn" id="test1">上传图片</button>
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" id="demo1" style="height: 5rem;">
+                    <p id="demoText"></p>
+                </div>
+                <input type="hidden" name="good_img" id="tupian" lay-verify="good_img">
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;">
+            <div id="uploadImg" class="layui-upload">
+                <button type="button" class="layui-btn" id="upload">
+                    <i class="layui-icon">&#xe67c;</i>上传商品轮播图<span style="color: red;font-size: 20px;">*</span>
+                </button>
+                <div class="layui-upload-list">
+                    <table class="layui-table" style="text-align: center;">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center;">图片预览</th>
+                            <th style="text-align: center;">大小</th>
+                            <th style="text-align: center;">状态</th>
+                            <th style="text-align: center;">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="imgList"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="layui-btn" id="startUpload">开始上传</button>
+                <div style="color: #c2c2c2;margin:10px 0;">温馨提示: 总共最多上传三张图片,
+                    上传图片必须宽大于高
+                </div>
+            </div>
+            <input type="text" name="show_imgs" id="imgInput" style="display: none;" >
+        </blockquote>
+
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品价格</label>
+        <div class="layui-input-block">
+            <input type="text" name="price" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品单位</label>
+        <div class="layui-input-block">
+            <input type="text" name="unit" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品库存</label>
+        <div class="layui-input-block">
+            <input type="text" name="stock" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品规格</label>
+        <div class="layui-input-block">
+            <input type="text" name="specs" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品产地</label>
+        <div class="layui-input-block">
+            <input type="text" name="address" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否上架</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_sale" lay-skin="switch" lay-filter="switchTest">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn tijiao" lay-submit="" lay-filter="demo1">立即添加</button>
+        </div>
+    </div>
+</form>
+<script src="/static/layui/layui/layui.js"></script>
+<script>
+    var multiple_images = [];
+    layui.use(['form','upload'], function(){
+        var form = layui.form
+        var $ = layui.jquery
+            ,upload = layui.upload;
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '{:url("goods/upload")}'
+            ,field:'image'
+            // ,auto: false
+            ,before: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    $('#demo1').attr('src', result); //图片链接（base64）
+                });
+            }
+            ,done: function(res){
+                //如果上传失败
+                if(res.code > 0){
+                    return layer.msg('上传失败');
+                }
+                //上传成功
+                console.log(res.data.src);
+                $('#tupian').val(res.data.src);
+                layer.msg('上传成功！');
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        //多文件列表示例
+        var demoListView = $('#imgList');
+        var totalArray = new Array();
+        var uploadListIns = upload.render({
+            elem: '#upload' //绑定元素
+            , url: '{:url("goods/uploads")}' //上传接口
+            , accept: 'images'  // 允许上传的文件类型
+            // , acceptMime: 'image/jpg,image/png'   // (只支持jpg和png格式，多个用逗号隔开),
+            , auto: false //选择文件后不自动上传
+            , bindAction: '#startUpload' //指向一个按钮触发上传
+            , multiple: true   // 开启多文件上传
+            , number: 3    //  同时上传文件的最大个数
+            ,field:'images[]'
+            , choose: function (obj) {
+                var files = this.files = obj.pushFile(); //将每次选择的文件追加到文件队列
+                var arr = Object.keys(files);
+                var flag = true;
+                    //读取本地文件
+                    obj.preview(function (index, file, result) {
+                        // 检查上传文件的个数
+                        if (arr.length <= 3)
+                        {
+                            var img = new Image();
+                            img.src = result;
+                            img.onload = function () { //初始化夹在完成后获取上传图片宽高，判断限制上传图片的大小。
+                                if(img.width>img.height ){
+                                    // console.log('index'+index);
+                                    var tr = $(['<tr id="upload-' + index + '">'
+                                        , '<td><img src="' + result + '" alt="' + file.name + '" class="layui-upload-img" style="height: 66px;width:100px;"></td>'
+                                        , '<td>' + (file.size / 1014).toFixed(1) + 'kb</td>'
+                                        , '<td>等待上传</td>'
+                                        , '<td>'
+                                        , '<button class="layui-btn demo-reload layui-hide">重传</button>'
+                                        , '<button class="layui-btn layui-btn-danger demo-delete">删除</button>'
+                                        , '</td>'
+                                        , '</tr>'].join(''));
+
+                                    //单个重传
+                                    tr.find('.demo-reload').on('click', function () {
+                                        obj.upload(index, file);
+                                    });
+
+                                    //删除
+                                    tr.find('.demo-delete').on('click', function () {
+                                        delete files[index]; //删除对应的文件
+                                        tr.remove();
+                                        uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+                                    });
+
+                                    demoListView.append(tr);
+                                }else{
+                                    delete files[index];
+                                    flag = false;
+                                    layer.msg("必须上传宽图(图片宽度大于高度)");
+                                    return false;
+                                }
+                            }
+                            return flag;
+                        }
+                        else
+                        {
+                            delete files[index];
+                            // 超出上传最大文件
+                            layer.msg("上传文件最大不超过3个");
+                        }
+                    });
+
+            }
+            , done: function (res, index, upload) {
+                if (res.code == 0) { //上传成功
+                    // 上传成功后将图片路径拼接到input中，多个路径用","分割
+                    var inputVal = document.getElementById("imgInput").value;
+                    var valData = "";
+                    if (inputVal) {
+                        valData = inputVal + "-" + res.data.src;
+                    } else {
+                        valData = res.data.src;
+                    }
+                    document.getElementById("imgInput").value = valData;
+                    var tr = demoListView.find('tr#upload-' + index)
+                        , tds = tr.children();
+                    tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
+                    tds.eq(3).html(''); //清空操作
+                    return delete this.files[index]; //删除文件队列已经上传成功的文件
+
+                }
+                this.error(index, upload);
+            }
+            , error: function (index, upload) {
+                var tr = demoListView.find('tr#upload-' + index)
+                    , tds = tr.children();
+                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                tds.eq(3).find('.demo-reload').removeClass('layui-hide'); //显示重传
+            }
+        });
+
+        form.on('submit(demo1)', function(data){
+            $.post('{:url("goods/add_goods")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+    });
+
+    // 获取JSON对象的长度
+    // function getJsonLength(jsonData){
+    //     var jsonLength = 0;
+    //     for(var item in jsonData){
+    //         jsonLength++;
+    //     }
+    //     return jsonLength;
+    // }
+
+    //清空文件隊列
+    // function clearFile(){
+    //     for (let x in UPLOAD_FILES) {
+    //         delete UPLOAD_FILES[x];
+    //     }
+    // }
+
+</script>
+
+{include file='layout/footer1' /}

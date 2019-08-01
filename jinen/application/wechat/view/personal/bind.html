@@ -1,0 +1,232 @@
+{empty name="Think.session.user_id"}
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>手机绑定</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/zepto.weui.js"></script>
+
+</head>
+
+<body ontouchstart>
+<div class="page-bd-15">
+    <div class="weui-cells weui-cells_form">
+        <form action='' method="post" id="form">
+            <div class="weui-cell">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">姓名</label>
+                </div>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" placeholder="请输入姓名" type="text" name="cus_name" id="cus_name" value="">
+                </div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">手机号</label>
+                </div>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" placeholder="请输入手机号" type="tel" name="phone" id="phone" value="">
+                </div>
+            </div>
+            <div class="weui-cell weui-cell_vcode">
+                <div class="weui-cell__hd">
+                    <label class="weui-label">验证码</label>
+                </div>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" placeholder="验证码" type="number" name="code" id="code" >
+                </div>
+                <div class="weui-cell__ft">
+                    <button  class="weui-vcode-btn" onclick="settime(this)" type="button">获取验证码</button>
+                </div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__hd"><label class="weui-label">地址</label></div>
+                <div class="weui-cell__bd">
+                    <input class="weui-input" id="start1" type="text" value="浙江省 杭州市 萧山区" name="customercity" id="customercity">
+                </div>
+            </div>
+            <input type="hidden" name="city" value="330000,330100,330109" id="city1">
+            <input type="hidden" name="headimgurl" value="{$role.headimgurl}">
+            <input type="hidden" name="openid" value="{$role.openid}">
+            <input type="hidden" name="nickname" value="{$role.nickname}">
+            <button type="button" value="" class="weui-btn weui-btn_primary" id="btn1">提交</button>
+        </form>
+    </div>
+</div>
+</body>
+<script src="/static/js/weui/picker.city.js"></script>
+<script>
+    var city1=document.getElementById('city1');
+    $("#start1").cityPicker({
+        title: "选择地址",
+        onChange: function (picker, values, displayValues) {
+            city1.value=values;
+        }
+    });
+    var countdown=60;
+    //验证码定时器
+    function settime(obj) {
+        var phone = $("#phone").val();
+        var myreg = /^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$/;
+
+        if(!myreg.test(phone))
+        {
+            $.toptip("请输入有效的手机号码！");
+            $("#btn1").attr("disabled","disabled");
+            $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+            return false;
+        }
+
+        var code = $(obj);
+        if (countdown == 0) {
+            code.removeAttr('disabled');
+            code.text("获取验证码");
+            countdown =60;
+            return;
+        } else if(countdown == 60)
+        {
+            if(!dphone(phone))
+            {
+                code.text("获取验证码");
+                $.toptip("该手机号已存在");
+                $("#btn1").attr("disabled","disabled");
+                $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                countdown =60;
+                return;
+            }else
+                {
+                    code.text("重新发送(" + countdown + ")");
+                    code.attr('disabled',true);
+                    countdown--;
+                }
+        }else if(countdown == 55)
+        {
+            code.text("重新发送(" + countdown + ")");
+            code.attr('disabled',true);
+            countdown--;
+            $.post('{:url("personal/sms")}',{phone:phone},function(data)
+            {
+                if(data.code==200){
+                    $.toptip(data.msg,'success');
+                }else
+                {
+                    $.toptip(data.msg);
+                    return false;
+                }
+            },'json');
+        }else {
+            code.text("重新发送(" + countdown + ")");
+            code.attr('disabled',true);
+            countdown--;
+        }
+        setTimeout(function() {
+            settime(obj) }, 1000);
+    }
+    // 判断手机号
+    function dphone(phone)
+    {
+        var codes=true;
+        $.ajaxSettings.async = false;
+        $.post('{:url("personal/pregphone")}',{phone:phone},function(data)
+        {
+            if(data.code==200)
+            {
+                codes=true;
+            }else
+            {
+                codes=false;
+            }
+        },'json');
+        return codes;
+    }
+    $(function(){
+        $(document).on("blur","#phone",function(){
+            var phone = $("#phone").val();
+            $.post('{:url("personal/pregphone")}',{phone:phone},function(data)
+            {
+                if(data.code==200){
+                    $("#btn1").removeAttr("disabled");
+                    $("#btn1").attr("class","weui-btn weui-btn_primary");
+                }else
+                {
+                    $.toptip("该手机号已存在");
+                    $("#btn1").attr("disabled","disabled");
+                    $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                }
+            },'json');
+        })
+    });
+    //提交按钮判断
+    $(function(){
+        $(document).on("click","#btn1",function(){
+            var form_datas = $('#form').serializeArray();
+            var can = {};
+            form_datas.forEach(function(value,index){
+                can[value.name] = value.value;
+            })
+            if(can.cus_name==""){
+                $.toptip("请输入姓名");
+                $("#btn1").attr("disabled","disabled");
+                $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+            if(can.code==""){
+                $.toptip("请输入验证码");
+                $("#btn1").attr("disabled","disabled");
+                $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+            if(!dphone($("#phone").val()))
+            {
+                $.toptip("该手机号已存在");
+                $("#btn1").attr("disabled","disabled");
+                $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+
+            //判断验证码
+            $.post('{:url("personal/pregsms")}',can,function(data)
+            {
+                // console.log(data);
+                if(data.code==200){
+                    $.toptip("提交成功",'success');
+                    setTimeout(function () {
+                        window.location.href = '{url("wechat/index")}';
+                    },800)
+                }else
+                {
+                    $.toptip(data.msg);
+                    return false;
+                }
+            },'json');
+        })
+    });
+    $(function(){
+        $(document).on("focus","#phone",function(){
+            $("#btn1").removeAttr("disabled");
+            $("#btn1").attr("class","weui-btn weui-btn_primary");
+        })
+    });
+    $(function(){
+        $(document).on("focus","#cus_name",function(){
+            $("#btn1").removeAttr("disabled");
+            $("#btn1").attr("class","weui-btn weui-btn_primary");
+        })
+    });
+    $(function(){
+        $(document).on("focus","#code",function(){
+            $("#btn1").removeAttr("disabled");
+            $("#btn1").attr("class","weui-btn weui-btn_primary");
+        })
+    });
+</script>
+</html>
+{else /}
+<script>window.location.href='{:url("personal/index")}';</script>
+{/empty}

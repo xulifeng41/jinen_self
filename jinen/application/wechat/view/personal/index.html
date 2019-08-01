@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>个人中心</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script>
+        $(function(){
+
+
+        });
+
+    </script>
+</head>
+
+<body ontouchstart class="page-bg">
+
+
+<div class="page-bd">
+
+    <div class="weui-panel weui-panel_access">
+        <div class="weui-panel__bd">
+            <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                <div class="weui-media-box__hd">
+                    <img class="weui-media-box__thumb" src="{$role.headimgurl}" alt="">
+                </div>
+                <div class="weui-media-box__bd">
+                    <h4 class="weui-media-box__title">{$role.nickname}</h4>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url("personal/mydevice")}>
+                        <div class="weui-cell__hd"><img src="/static/images/img/1.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
+                        {switch $role.role}
+                        {case 1 }<div class="weui-cell__bd weui-cell_primary">
+                        <p>我的设备</p>
+                    </div>
+                        {/case}
+                        {case 2 }<div class="weui-cell__bd weui-cell_primary">
+                        <p>我的客户</p>
+                    </div>
+                        {/case}
+                        {case 3 }<div class="weui-cell__bd weui-cell_primary">
+                        <p>我安装的设备</p>
+                    </div>
+                        {/case}
+                        {case 4 }<div class="weui-cell__bd weui-cell_primary">
+                        <p>区域下的设备</p>
+                    </div>
+                        {/case}
+                        {/switch}
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                    <a class="weui-cell weui-cell_access" href={:url("personal/add")}>
+                        <div class="weui-cell__hd"><img src="/static/images/img/3.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
+                        {switch $role.role}
+                        {case 2 }<div class="weui-cell__bd weui-cell_primary">
+                        <p>添加客户</p>
+                    </div>
+                        {/case}
+                        {case 3 }<div class="weui-cell__bd weui-cell_primary">
+                        <p>安装设备</p>
+                    </div>
+                        {/case}
+                        {default /}<div class="weui-cell__bd weui-cell_primary">
+                        <p>基本信息</p>
+                    </div>
+                        {/switch}
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                    {switch $role.role}
+                    {case 1 }
+                    <a class="weui-cell weui-cell_access" href={:url("personal/repairs")}>
+                        <div class="weui-cell__hd"><img src="/static/images/img/2.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>我要报修</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                    <a class="weui-cell weui-cell_access" href={:url("personal/myrepairs")}>
+                        <div class="weui-cell__hd"><img src="/static/images/img/4.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>我的报修</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                    {/case}
+                    {/switch}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>用户信息</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/zepto.weui.js"></script>
+
+
+</head>
+
+<body ontouchstart>
+<div class="container">
+    <div class="page-bd-15">
+        {switch $info.role}
+        {case 3 }
+        <!--安装员-->
+        <!--地址需要单独js城市数据-->
+        <div class="weui-cells weui-cells_form">
+            <!--<form action='{:url("personal/insert")}' method="post" id="form">-->
+            <form action='' method="" id="form">
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label class="weui-label">客户地址</label></div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" id="start2" type="text" value="浙江省 杭州市 萧山区" name="customercity">
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label for="username" class="weui-label">客户</label></div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" id="username" type="text" value="" data-values="" readonly>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd"><label for="version" class="weui-label">设备型号</label></div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" id="version" type="text" value="" data-values="" readonly>
+                        </div>
+                    </div>
+                    <div class="weui-cell">
+                        <div class="weui-cell__hd">
+                            <label class="weui-label">设备码</label>
+                        </div>
+                        <div class="weui-cell__bd">
+                            <input class="weui-input" placeholder="请输入设备码" name="device_code" id="device_code" value="">
+                        </div>
+                    </div>
+                    <input type="hidden" name="city" value="" id="city2">
+                    <input type="hidden" name="userid" value="" id="userid">
+                <input type="hidden" name="versionid" value="" id="versionid">
+                <div style="height:2rem;display: flex;background-color:#F3F3F3;"></div>
+                    <button type="button" value="" class="weui-btn weui-btn_primary" id="btn1">提交</button>
+
+            </form>
+        </div>
+        {/case}
+        {case 1 }
+        <!--客户-->
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>姓名</p>
+                </div>
+                <div class="weui-cell__ft">{$info.cus_name}</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>手机</p>
+                </div>
+                <div class="weui-cell__ft">{$info.phone}</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>店名</p>
+                </div>
+                <div class="weui-cell__ft">{$info.shop_name}</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>地址</p>
+                </div>
+                <div class="weui-cell__ft">{$infos.address}</div>
+            </div>
+            <a class="weui-cell weui-cell_access" href={:url("personal/edit",['id'=>$info.id,'role'=>1])}>
+                <div class="weui-cell__bd">
+                    <p>完善相关信息</p>
+                </div>
+                <div class="weui-cell__ft">
+                </div>
+            </a>
+        </div>
+        {/case}
+        {case 2}
+        <div class="weui-search-bar" id="searchBar">
+            <form class="weui-search-bar__form" action='{:url("personal/sellbind")}' method="post" id="subform">
+                <div class="weui-search-bar__box">
+                    <i class="weui-icon-search"></i>
+                    <input class="weui-search-bar__input" id="searchInput" placeholder="搜索" required="" type="search" name="searchv">
+                    <a href="javascript:" class="weui-icon-clear" id="searchClear"></a>
+                </div>
+                <label class="weui-search-bar__label" id="searchText" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+                    <i class="weui-icon-search"></i>
+                    <span>根据客户手机号搜索</span>
+                </label>
+                <input type="hidden" name="id" value="{$info.id}">
+            </form>
+            <a href="javascript:" class="weui-search-bar__cancel-btn" id="searchCancel">取消</a>
+        </div>
+        <div class="weui-cells" id="pdiv">
+            <div class="page-hd">
+                <h1 class="page-hd-title">
+                    当前地区可选择客户
+                </h1>
+            </div>
+        </div>
+        <div class="weui-loadmore" id="loading">
+            <i class="weui-loading"></i>
+            <span class="weui-loadmore__tips">正在加载</span>
+        </div>
+        {/case}
+        {case 4 }
+        <div class="weui-cells">
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>姓名</p>
+                </div>
+                <div class="weui-cell__ft">{$info.cus_name}</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>手机</p>
+                </div>
+                <div class="weui-cell__ft">{$info.phone}</div>
+            </div>
+            <div class="weui-cell">
+                <div class="weui-cell__bd">
+                    <p>地址</p>
+                </div>
+                <div class="weui-cell__ft">{$infos.address}</div>
+            </div>
+        </div>
+        {/case}
+        {/switch}
+    </div>
+</div>
+
+</body>
+<script src="/static/js/weui/picker.city.js"></script>
+{switch $info.role}
+{case 2}
+<script src="/static/js/weui/jquery-weui.js"></script>
+<script>
+    //搜索
+    $(function(){
+        $(document).on("submit","#subform",function(){
+            var id="{$info.id}";
+           var phone=$("#searchInput").val();
+            $.ajaxSettings.async = false;
+            var codes=true;
+            $.post('{:url("personal/searchajax")}',{phone:phone,id:id},function(data)
+            {
+                if(data.code==200)
+                {
+                    $.toptip("正在查找",'success');
+                }else
+                {
+                    codes=false;
+                    $.toptip(data.msg);
+                }
+            },'json')
+            return codes;
+        })
+    });
+    var page=1;//当前页
+    $(document).ready(getbalancelist());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            getbalancelist();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function getbalancelist(){
+        $.post('{:url("personal/selectuser")}',{page:page},function(data)
+        {
+            if(data[1].length)
+            {
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //处理数据部分 .......
+                var str='';
+                for (var i = 0; i < data[1].length; i++) {
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/sellbind\")}?id="+data[1][i].id+">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>"+data[1][i].cus_name+"</p>";
+                    str+="</div>"
+                    str+="<div class=\"weui-cell__ft\">";
+                    str+="</div>";
+                    str+="</a>";
+                }
+                $("#pdiv").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+            {
+                str="<div class=\"page-hd\">";
+                str+="<h1 class=\"page-hd-title\">当前地区暂无用户</h1></div>";
+                $("#pdiv").html(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }
+
+        },'json')
+        page++;
+    }
+</script>
+{/case}
+{case 3}
+<script>
+    //安装员选择客户
+    $("#start2").cityPicker({
+        title: "客户地址",
+        onChange: function (picker, values, displayValues) {
+            $("#city2").val(values);
+            $.post('{:url("personal/address")}',{citys:values},function(data)
+            {
+                if(data.length)
+                {
+                    //选择客户下拉框
+                    $("#username").val('');
+                    var datalist = new Array;
+                    for (var i = 0; i < data.length; i++) {
+                        var info = { "title": data[i].cus_name, "value": data[i].id };
+                        datalist.push(info);
+                    }
+                    $("#username").select(
+                        "update",
+                        {title: "选择客户",
+                            items: datalist,
+                        });
+                    // console.log(data);
+                }else
+                {
+                    $("#username").select(
+                        "update",
+                        {title: "该地区下暂无用户",
+                            items: [],
+                        });
+                    $("#username").val('');
+                    $('#username').data('values','');
+                }
+            },'json');
+        },
+    });
+    //安装员选择型号
+    var menulist = {php} echo $version ;{/php};
+        $("#version").select(
+            {title: "选择型号",
+                items: menulist,
+            });
+    //页面最初点击提示有无客户
+    $(function(){
+        $(document).on("click","#username",function(){
+            var city=$("#city2").val();
+            if(city==''){
+                var citys=['330000','330100','330109'];
+                $.post('{:url("personal/address")}',{citys:citys},function(data)
+                {
+                    if(data.length)
+                    {
+                        //选择客户下拉框
+                        $("#username").val('');
+                        var datalist = new Array;
+                        for (var i = 0; i < data.length; i++) {
+                            var info = { "title": data[i].cus_name, "value": data[i].id };
+                            datalist.push(info);
+                        }
+                        $("#username").select(
+                            "update",
+                            {title: "选择客户",
+                                items: datalist,
+                            });
+                    }else
+                    {
+                        $.toptip('该地区下暂无用户');
+                        $("#username").val('');
+                        $('#username').data('values','');
+                    }
+                },'json');
+            }
+        })
+    });
+    //判断设备码唯一
+        $(function(){
+            $(document).on("change","#device_code",function(){
+                var code=$('#device_code').val();
+                $.post('{:url("personal/dcodeajax")}',{code:code},function(data)
+                {
+                    if(data.code==200)
+                    {
+                        $.toptip(data.msg,'success');
+                        $("#btn1").removeAttr("disabled");
+                        $("#btn1").attr("class","weui-btn weui-btn_primary");
+                    }else
+                    {
+                        $.toptip(data.msg);
+                        $("#btn1").attr("disabled","disabled");
+                        $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    }
+                },'json');
+            })
+        });
+        // 提交按钮判断code
+        function dcode(code)
+        {
+            var codes=true;
+            $.ajaxSettings.async = false;
+            $.post('{:url("personal/dcodeajax")}',{code:code},function(data)
+            {
+                if(data.code==200)
+                {
+                    codes=true;
+                }else
+                {
+                    codes=false;
+                }
+            },'json');
+            return codes;
+        }
+        //安装员提交按钮
+        $(function(){
+            $(document).on("click","#btn1",function(){
+                if($('#username').data('values')==""){
+                    $.toptip("请选择正确的客户");
+                    return false;
+                }else if($('#version').data('values')=="")
+                {
+                    $.toptip("请选择正确的型号");
+                    $("#btn1").attr("disabled","disabled");
+                    $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }else if($("#device_code").val()=='')
+                {
+                    $.toptip("请输入设备码");
+                    $("#btn1").attr("disabled","disabled");
+                    $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }else if(!dcode($('#device_code').val()))
+                {
+                    $.toptip("该设备码已存在");
+                    $("#btn1").attr("disabled","disabled");
+                    $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }else
+                {
+                    $("#userid").val($('#username').data('values'));
+                    $("#versionid").val($('#version').data('values'));
+                    var form_data=$("#form").serializeArray();
+                    var datas={};
+                    $.each(form_data,function(i,v){
+                        datas[v.name] = v.value;
+                    })
+                    $.post('{:url("personal/insert")}',{values:datas},function(data)
+                    {
+                        if(data.code==200){
+                            $.toptip(data.msg,'success');
+                            window.location.href='{:url("personal/mydevice")}';
+                        }else
+                        {
+                            $.toptip(data.msg);
+                        }
+                    },'json');
+                }
+            })
+        });
+        $(function(){
+            $(document).on("focus","#version",function(){
+                $("#btn1").removeAttr("disabled");
+                $("#btn1").attr("class","weui-btn weui-btn_primary");
+            })
+        });
+        $(function(){
+            $(document).on("focus","#device_code",function(){
+                $("#btn1").removeAttr("disabled");
+                $("#btn1").attr("class","weui-btn weui-btn_primary");
+            })
+        });
+</script>
+{/case}
+{/switch}
+</html>

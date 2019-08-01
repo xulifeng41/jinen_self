@@ -1,0 +1,243 @@
+{include file='layout/header1' /}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">编号</label>
+        <div class="layui-input-block">
+            <input type="text" lay-verify="required" autocomplete="off" class="layui-input" value="{$device.device_code}" {neq name="role" value='1'} readonly {/neq}>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">型号</label>
+        {eq name="role" value="1"}
+        <div class="layui-input-block">
+            <select name="version" lay-filter="aihao" name="version">
+                {foreach $versions as $val}
+                    <option value="{$val.id}" {eq name="device.version" value="$val.id"}selected{/eq}>
+                        {$val.version_name}
+                    </option>
+                {/foreach}
+            </select>
+        </div>
+        {else /}
+        <div class="layui-input-block">
+            <input type="text" name="version" lay-verify="required" autocomplete="off" class="layui-input" value="{$device->vers->version_name}"  readonly>
+        </div>
+        {/eq}
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">地域</label>
+        <div class="layui-input-block">
+            <select name="province"  lay-filter="sheng" id="sheng">
+                <option value="0">请选择省</option>
+                {foreach $provinces as $val}
+                <option value="{$val.id}" {eq name="$device.province" value="$val.id"} selected {/eq}>{$val.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="city" id="shi" lay-filter="shi">
+                <option value="0">请选择市</option>
+                {foreach $cities as $city}
+                <option value="{$city.id}" {eq name="$device.city" value="$city.id"} selected {/eq}>{$city.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="area" id="qu" lay-filter="qu">
+                <option value="0">请选择县/区</option>
+                {foreach $areas as $area}
+                <option value="{$area.id}" {eq name="$device.area" value="$area.id"} selected {/eq}>{$area.name}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">客户</label>
+        {eq name="role" value="1"}
+        <div class="layui-input-block">
+            <select name="customer_id" lay-filter="shang" id="shang">
+                <option value="0">请选择商家</option>
+                {foreach $kehus as $kehu}
+                <option value="{$kehu.id}" {eq name="$device.customer_id" value="$kehu.id"} selected {/eq}>{$kehu.cus_name}</option>
+                {/foreach}
+            </select>
+        </div>
+        {else /}
+        <div class="layui-input-block">
+            <input type="text" lay-verify="required" autocomplete="off" class="layui-input" value="{$device->costomer->cus_name}"  readonly>
+            <input type="hidden" name="customer_id" value="{$device->costomer->id}">
+        </div>
+        {/eq}
+
+
+    </div>
+    {if ( ADROLE != 3) }
+    <div class="layui-form-item">
+        <label class="layui-form-label">开关1</label>
+        <div class="layui-input-block">
+            <input type="checkbox" {eq name="$device.switch1" value="1" }checked{/eq} lay-skin="switch" lay-text="ON|OFF" lay-filter="switch1">
+        </div>
+        <div class="layui-form-mid layui-word-aux">代理商控制机器是否可以开启</div>
+    </div>
+    {/if}
+    {if (ADROLE!=2)}
+    <div class="layui-form-item">
+        <label class="layui-form-label">开关2</label>
+        <div class="layui-input-block">
+            <input type="checkbox" {eq name="$device.switch2" value="1" }checked{/eq} lay-skin="switch" lay-text="ON|OFF" lay-filter="switch2">
+        </div>
+        <div class="layui-form-mid layui-word-aux">环保部门控制机器是否可以开启</div>
+    </div>
+    {/if}
+    {if (ADROLE==1)}
+    <div class="layui-form-item">
+        <label class="layui-form-label">公司产品</label>
+        <div class="layui-input-block">
+            <input type="checkbox" {eq name="$device.is_mine" value="1" }checked{/eq} lay-skin="switch" lay-text="是|否">
+        </div>
+    </div>
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">安装时间</label>
+        <div class="layui-input-block">
+            <input type="text" autocomplete="off" class="layui-input" value="{$device.install_time}"  readonly>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">安装人</label>
+        <div class="layui-input-block">
+            <input type="text" autocomplete="off" class="layui-input" value="{$device.installer}"  readonly>
+
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">运行状态</label>
+        <div class="layui-input-block">
+            <input type="text" autocomplete="off" class="layui-input" value="{$device.status}"  readonly>
+
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">总时间</label>
+        <div class="layui-input-block">
+            <input type="text" lay-verify="required" autocomplete="off" class="layui-input" value="{$device.total_time}"  readonly>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即修改</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+    var switch1 = "{$device.switch1}";
+    var switch2 = "{$device.switch2}";
+    var device_id = "{$device.id}";
+    layui.use('form', function(){
+        var form = layui.form;
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#shi').html(oldshi);
+            $('#qu').html(oldarea);
+            region(oldshi,$('#shi'),data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#qu').html(oldarea);
+            region(oldarea,$('#qu'),data.value,form);
+        });
+
+        form.on('select(qu)', function(data){
+            var oldshang = '<option value="0">请选择商家</option>';
+            var obj = $('#shang')
+            $('#shang').html(oldshang);
+            var sheng = $('#sheng').val();
+            var shi = $('#shi').val();
+            var qu = data.value;
+            $.ajax({
+                url: '{:url("customer/sellers")}',
+                type: 'post',
+                data: {"province": sheng, "city":shi, "area": qu},
+                dataType: 'json',
+                success: function(data){
+                    var option = '';
+                    $.each(data.data,function(i,v){
+                        option += `<option value='${v.id}'>${v.cus_name}</option>`;
+                    })
+                    obj.html(oldshang+option).change();
+                    form.render();
+                }
+            })
+
+        });
+
+        form.on('switch(switch1)', function(data){
+            if(data.elem.checked){
+                switch1 = 1;
+            }else{
+                switch1 = 2;
+            }
+
+        });
+
+        form.on('switch(switch2)', function(data){
+            if(data.elem.checked){
+                switch2 = 1;
+            }else{
+                switch2 = 2;
+            }
+
+        });
+
+        form.on('submit(demo1)', function(data){
+            var datas = data.field;
+            datas.id = device_id;
+            datas.switch1 = switch1;
+            datas.switch2 = switch2;
+            console.log(datas);
+            $.post('{:url("device/edit")}',datas,function(res){
+                if(res.code==200){
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                }else{
+                    return layer.msg(res.msg);
+                }
+            },'json')
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+    });
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+
+
+</script>
+
+{include file='layout/footer1' /}

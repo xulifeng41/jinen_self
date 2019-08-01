@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>用户信息</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/zepto.weui.js"></script>
+
+</head>
+
+<body ontouchstart>
+<div class="container">
+    <div class="page-bd-15">
+        <div class="weui-cells weui-cells_form">
+            <form action='' method="" id="form">
+                <div class="weui-cell">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">客户姓名</label>
+                    </div>
+                    <div class="weui-cell__bd" style="color:#BDBDBD">
+                        <input class="weui-input" value="{$info.cus_name}" readonly>
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">手机号</label>
+                    </div>
+                    <div class="weui-cell__bd" style="color:#BDBDBD">
+                        <input class="weui-input" value="{$info.phone}" readonly>
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">地址</label>
+                    </div>
+                    <div class="weui-cell__bd" style="color:#BDBDBD">
+                        <input class="weui-input" value="{$infos.address}" readonly>
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">详细地址</label>
+                    </div>
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" value="{$info.detail_address}" type="text" name="detail_address">
+                    </div>
+                </div>
+                <div class="weui-cell">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">店名</label>
+                    </div>
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" value="{$info.shop_name}" type="text" name="shop_name">
+                    </div>
+                </div>
+                <input type="hidden" name="role" value="2">
+                <input type="hidden" name="id" value="{$info.id}">
+                <div style="height:2rem;display: flex;background-color:#F3F3F3;"></div>
+                <button type="button" value="" class="weui-btn weui-btn_primary" id="btn">提交</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    $(function(){
+        $(document).on("click","#btn",function(){
+                var form_data=$("#form").serializeArray();
+                var datas={};
+                $.each(form_data,function(i,v){
+                    datas[v.name] = v.value;
+                })
+                $.post('{:url("personal/insert")}',{values:datas},function(data)
+                {
+                    if(data.code==200){
+                        $.toptip(data.msg,'success');
+                        window.location.href='{:url("personal/mydevice")}';
+                    }else
+                    {
+                        $.toptip(data.msg);
+                    }
+                },'json');
+        })
+    });
+</script>
+</html>

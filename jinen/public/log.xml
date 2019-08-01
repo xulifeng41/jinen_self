@@ -1,0 +1,37 @@
+15:13:00 R <xml><ToUserName><![CDATA[gh_43bfe9c75765]]></ToUserName>
+<FromUserName><![CDATA[os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></FromUserName>
+<CreateTime>1559718769</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[CLICK]]></Event>
+<EventKey><![CDATA[mycode]]></EventKey>
+</xml>
+11:34:07 R <xml><ToUserName><![CDATA[gh_43bfe9c75765]]></ToUserName>
+<FromUserName><![CDATA[os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></FromUserName>
+<CreateTime>1560224036</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[CLICK]]></Event>
+<EventKey><![CDATA[mycode]]></EventKey>
+</xml>
+14:20:39 R <xml><ToUserName><![CDATA[gh_43bfe9c75765]]></ToUserName>
+<FromUserName><![CDATA[os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></FromUserName>
+<CreateTime>1564467629</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[SCAN]]></Event>
+<EventKey><![CDATA[os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></EventKey>
+<Ticket><![CDATA[gQFR8TwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyaU9VbVY2UGNmVWwxMDAwME0wN1kAAgQKredcAwQAAAAA]]></Ticket>
+</xml>
+14:20:47 R <xml><ToUserName><![CDATA[gh_43bfe9c75765]]></ToUserName>
+<FromUserName><![CDATA[os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></FromUserName>
+<CreateTime>1564467647</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[unsubscribe]]></Event>
+<EventKey><![CDATA[]]></EventKey>
+</xml>
+14:21:30 R <xml><ToUserName><![CDATA[gh_43bfe9c75765]]></ToUserName>
+<FromUserName><![CDATA[os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></FromUserName>
+<CreateTime>1564467690</CreateTime>
+<MsgType><![CDATA[event]]></MsgType>
+<Event><![CDATA[subscribe]]></Event>
+<EventKey><![CDATA[qrscene_os8z41XqWkOgGaeZ2ogVUa_4x5bk]]></EventKey>
+<Ticket><![CDATA[gQFR8TwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyaU9VbVY2UGNmVWwxMDAwME0wN1kAAgQKredcAwQAAAAA]]></Ticket>
+</xml>

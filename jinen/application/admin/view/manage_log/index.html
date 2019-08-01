@@ -1,0 +1,65 @@
+{layout name="layout/layout" /}
+<div class="demoTable" style="padding: 0.5rem 0.8rem;">
+    <form class="layui-form layui-form-pane layui-inline" action="">
+        <div class="layui-form-item" style="margin-bottom: 0;">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">操作链接</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="shop_name" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <button type="button" class="layui-btn" data-type="reload">搜索</button>
+</div>
+<table id="demo" lay-filter="test"></table>
+<script>
+    layui.use('table', function(){
+        var devtable = layui.table;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("manage_log/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar: '#toolbarDemo'
+            ,defaultToolbar: []
+            ,title: '设备列表'
+            ,cols: [[ //表头
+                {field: 'id', title: 'ID',width: 40}
+                ,{field: 'manager_id', title: '用户名'}
+                ,{field: 'url', title: '操作链接'}
+                ,{field: 'action_content', title: '操作'}
+                ,{field: 'brower', title: '浏览器'}
+                ,{field: 'ip', title: 'ip'}
+                ,{field: 'create_time', title:'时间'}
+            ]]
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var shop_name = $('#shop_name').val();
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        'url': shop_name
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+    });
+
+
+
+
+</script>

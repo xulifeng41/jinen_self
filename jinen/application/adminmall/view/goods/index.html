@@ -1,0 +1,145 @@
+
+{layout name="layout/layout" /}
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="show">轮播图设置</a>
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加商品</button>
+    </div>
+</script>
+
+<script type="text/html" id="switchTpl">
+    <input type="checkbox" name="is_sale" value="{{d.id}}" lay-skin="switch" lay-text="上架|不上架" lay-filter="sale" {{ d.is_sale ? 'checked' : '' }}>
+</script>
+<script type="text/html" id="switch1">
+    {foreach $cates as $cate}
+        {{#  if(d.cata_id == {$cate.id}){ }}
+        {$cate.cat_name}
+        {{#  } }}
+    {/foreach}
+</script>
+<script type="text/html" id="switch2">
+    {{#  if(d.is_check == 1){ }}
+        已通过审核
+    {{#  } else { }}
+        正在审核中
+    {{#  } }}
+</script>
+<script>
+    layui.use('table', function(){
+        var table = layui.table,form = layui.form;
+        table.render({
+            elem: '#demo'
+            ,url: '{:url("goods/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar:'#toolbarDemo'
+            ,defaultToolbar:[]
+            ,title: '商品列表'
+            ,cols: [[ //表头
+                {field:'id',title:'序号',width:40,type:'numbers'}
+                ,{field: 'good_name', title: '商品名称'}
+                ,{field: 'cata_id', title: '类属于',templet: '#switch1'}
+                ,{field: 'price', title: '商品价格',width:100}
+                ,{field: 'is_sale', title: '是否上架', templet: '#switchTpl', unresize: true}
+                // ,{field: 'is_sale', title: '是否上架'}
+                ,{field: 'stock', title: '商品库存'}
+                ,{field: 'good_img', title: '图片' , templet:function(d){return '<img src="'+d.good_img+'" style="height:2rem">'}}
+                ,{field: 'is_check', title: '商品是否通过审核',templet: '#switch2'}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo',width:200}
+            ]]
+        });
+
+        //头工具栏事件
+        table.on('toolbar(test)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'add':
+                    layer.open({
+                        type: 2,
+                        title: '添加商品',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['40vw', '80vh'],
+                        content: '{:url("goods/add_goods")}'
+                    });
+                    break;
+            };
+        });
+
+        //监听性别操作
+        form.on('switch(sale)', function(obj){
+            var is_sale = 1;
+            var id = this.value;
+            if (!obj.elem.checked){
+                is_sale = 0;
+            }
+            $.ajax({
+                url:"{:url('goods/is_sale')}",
+                type: 'post',
+                dataType: 'json',
+                data: {is_sale: is_sale,id:id},
+                success: function(res){
+                    layer.msg(res.msg);
+                }
+            })
+        });
+
+        table.on('tool(test)', function(obj){
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title: '修改商品信息',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['40vw', '80vh'],
+                        content: '{:url("goods/edit_goods")}?id='+obj.data.id
+                    });
+                    break;
+                case 'del':
+                    //询问框
+                    layer.confirm('确定将该商品放入回收站？', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("goods/del")}?type=recycle&id='+obj.data.id,function(res){
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                window.location.reload();
+                            },800)
+                        },'json');
+                    }, function(){
+
+                    });
+                    break;
+                case 'show':
+                    layer.open({
+                        type: 2,
+                        title: '修改商品轮播图',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['50vw', '90vh'],
+                        content: '{:url("goods/show_imgs")}?id='+obj.data.id
+                    });
+                    break;
+            };
+        });
+
+    });
+    function getcates()
+    {
+        return 123;
+    }
+</script>
+
+
+

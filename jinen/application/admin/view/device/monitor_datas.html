@@ -1,0 +1,226 @@
+{include file='layout/header1' /}
+<div id="main" style="width:75%;height:18rem;float:left"></div>
+<div style="float: right;width: 25%;height: 18rem;">
+    <div style="width: 100%;text-align: center;font-size: 1.1rem;margin: 10px 0;">
+        <strong>客户信息</strong>
+    </div>
+    <div style="width: 100%;">
+        <ul style="font-size: 0.9rem">
+            <li style="line-height: 1.5rem;"><strong>客户姓名：</strong>{$device.costomer.cus_name}</li>
+            <li style="line-height: 1.5rem;"><strong>客户电话：</strong>{$device.costomer.phone}</li>
+            <li style="line-height: 1.5rem;"><strong>客户地址：</strong>{$dizhi[0]} {$dizhi[1]} {$dizhi[2]}{$device.costomer.detail_address}</li>
+
+            <li style="line-height: 1.5rem;"><strong>设备编号：</strong>{$device.device_code}</li>
+            <li style="line-height: 1.5rem;"><strong>设备型号：</strong>{$device.vers.version_name}</li>
+            <li style="margin-top: 1.2rem;">
+                <button class="layui-btn layui-btn-danger" {if (ADROLE==2&&$device.switch1==2) OR (ADROLE!=2&&$device.switch2==2)}disabled{/if}>一键关停</button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="demoTable">
+    <div style="width: 100%;text-align: center;font-size: 1.1rem;">
+        <strong>历史记录</strong>
+    </div>
+    <div class="layui-form">
+        <div class="layui-form-item" style="margin-bottom: 0;">
+            <div class="layui-inline">
+                <label class="layui-form-label">选择查询时间</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" id="start_time" placeholder="yyyy-MM-dd">
+                </div>
+            </div>
+            <button class="layui-btn" data-type="reload">搜索</button>
+        </div>
+    </div>
+</div>
+
+<div style="padding: 0 10px;">
+    <table id="demo" lay-filter="test"></table>
+</div>
+
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+    $.get('{:url("device/monitor_datas")}?id='+"{$id}", function (data) {
+        myChart.setOption(option = {
+            title: {
+                text: '今日油烟排放实时监控',
+                left: '35%',
+                top: '10px'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '8%',
+                right: '2%',
+                bottom: '1%',
+                containLabel: true
+            },
+            xAxis: {
+                boundaryGap:false,
+                axisLabel:{
+                    rotate: 45,
+                },
+                data: data.datas.map(function (item) {
+                    return item.shijian;
+                })
+            },
+            yAxis: {
+                splitLine: {
+                    show: false
+                }
+            },
+            toolbox: {
+                show:false,
+                left: 'center',
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            dataZoom: [{
+                type: 'inside',
+                start: 50,
+                end: 100
+            }],
+            visualMap: {
+                type: 'continuous',
+                top: 10,
+                right: 10,
+                show: false,
+                pieces: [{
+                    gt: 0,
+                    lte: 1,
+                    color: '#096'
+                }, {
+                    gt: 1,
+                    lte: 1.5,
+                    color: '#ff9933'
+                }, {
+                    gt: 1.5,
+                    lte: 2,
+                    color: '#cc0033'
+                }, {
+                    gt: 2,
+                    color: '#7e0023'
+                }],
+                outOfRange: {
+                    color: '#999'
+                }
+            },
+            series: {
+                name: '排放量',
+                type: 'line',
+                data: data.datas.map(function (item) {
+                    return edit_data(item.soot);
+                }),
+                smooth:true,
+                markLine: {
+                    silent: true,
+                    data: [{
+                        yAxis: 1
+                    }, {
+                        yAxis: 1.5
+                    }, {
+                        yAxis: 2
+                    },{type: 'average', name: '日平均值'}]
+                }
+            }
+        });
+    },'json');
+
+</script>
+<script src="../../static/layui/layui/layui.js"></script>
+
+<script>
+    function edit_data(data){
+        var zhi = 0;
+        if(data > 10){
+            zhi = data*0.12;
+        }else if(data > 5){
+            zhi = data * 0.2;
+        }else if(data > 1){
+            zhi = data * 0.35
+        }else{
+            zhi = data;
+        }
+        return Math.floor(zhi *100) / 100
+    }
+    layui.use('table', function(){
+        var devtable = layui.table;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("device/monitor_datas_table")}?id='+'{$id}' //数据接口
+            ,page: {
+                layout: ['limit', 'count', 'prev', 'page', 'next', 'skip'] //自定义分页布局
+                ,limit: 5
+                ,limits:[5,10]
+                ,groups: 5 //只显示 1 个连续页码
+                ,first: false //不显示首页
+                ,last: false //不显示尾页
+
+            } //开启分页
+            // ,toolbar: '#toolbarDemo'
+            // ,defaultToolbar:[]
+            ,title: '设备列表'
+            ,cols: [[ //表头
+                {field: 'soot', title: '油烟',templet:function (d) {
+                        return edit_data(d.soot)
+                    }}
+                ,{field: 'pellet', title: '颗粒物'}
+                ,{field: 'not_methane', title: '非甲烷气体'}
+                ,{field: 'fan_status', title: '风机状态'}
+                ,{field: 'voltage', title: '高压电源电压值'}
+                ,{field: 'wind_speed', title:'风速'}
+                ,{field: 'fire_controll', title:'消防'}
+                ,{field: 'leakage', title:'天然气泄漏'}
+                ,{field: 'create_time', title:'时间'}
+            ]]
+        });
+        var $ = layui.$, active = {
+            reload: function(){
+                var demoReload = $('#start_time');
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        shijian : demoReload.val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function() {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        })
+    });
+
+    layui.use('laydate', function(){
+        var laydate = layui.laydate;
+
+        //常规用法
+        laydate.render({
+            elem: '#start_time',
+            type: 'date',
+            range: '~',
+        });
+    });
+
+    $('.layui-btn-danger').click(function(){
+        $.post('{:url("device/close")}',{id:'{$id}'},function(data){if(data.code==200){layer.msg(data.msg);}},'json')
+    })
+
+
+
+</script>
+{include file='layout/footer1' /}

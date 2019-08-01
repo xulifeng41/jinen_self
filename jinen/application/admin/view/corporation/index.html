@@ -1,0 +1,148 @@
+{layout name="layout/layout" /}
+
+<div class="demoTable" style="padding: 0.5rem 0.8rem;">
+
+
+    <button type="button" class="layui-btn" data-type="reload">搜索</button>
+.
+</div>
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
+    <button class="layui-btn layui-btn-xs" lay-event="del">删除</button>
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加公司</button>
+    </div>
+</script>
+
+<script>
+    layui.use('table', function(){
+        var devtable = layui.table;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("corporation/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar: '#toolbarDemo'
+            ,defaultToolbar: []
+            ,title: '设备列表'
+            ,cols: [[ //表头
+                {field: 'id', title: 'ID',width: 50}
+                ,{field: 'name', title: '公司名称'}
+                ,{field: 'logo', title: '客户头像',templet:function(d){
+                        return '<img src="'+d.logo+'" style="height: 2rem ;">';
+                    }}
+                ,{field: 'legaler1', title: '公司负责人'}
+                ,{field: 'create_time', title: '注册时间'}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+            ]]
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var sheng = $('#sheng').val();
+                var shi = $('#shi').val();
+                var qu = $('#qu').val();
+                var shang = $('#shang').val();
+                var cus_name = $('#cus_name').val();
+                var shop_name = $('#shop_name').val();
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        province: sheng,
+                        city: shi,
+                        area: qu,
+                        role: shang,
+                        cus_name: cus_name,
+                        shop_name: shop_name
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //头工具栏事件
+        devtable.on('toolbar(test)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    layer.open({
+                        type: 2,
+                        title: '添加新公司',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['45vw', '70vh'],
+                        content: '{:url("corporation/add_corporation")}'
+                    });
+                    break;
+            };
+        });
+
+        //监听事件
+        devtable.on('tool(test)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title: '公司详情',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['45vw', '70vh'],
+                        content: '{:url("corporation/edit_company")}?id='+data.id
+                    });
+                    break;
+            };
+        });
+
+    });
+
+    layui.use('form', function(){
+        var form = layui.form;
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#shi').html(oldshi);
+            $('#qu').html(oldarea);
+            region(oldshi,$('#shi'),data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#qu').html(oldarea);
+            region(oldarea,$('#qu'),data.value,form);
+        });
+
+    });
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+</script>

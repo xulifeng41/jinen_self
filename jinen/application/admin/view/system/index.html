@@ -1,0 +1,240 @@
+{layout name="layout/layout" /}
+
+<div style="padding: 10px;">
+    <ul>
+        <li><strong>系统配置</strong></li>
+        <li>主要用于配置数据采集端修订参数、监控警报阀值和其他一些系统配置</li>
+    </ul>
+
+    <div class="layui-tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">参数修订</li>
+            <li>预警阀值</li>
+            <li>微信菜单配置</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <!--参数修订-->
+                <form class="layui-form" id="setting" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">油烟</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="soot" lay-verify="required" autocomplete="off" value="{$setting['soot']}" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">颗粒物</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="pellet" lay-verify="required" autocomplete="off" value="{$setting['pellet']}" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">非甲烷气体</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="not_mathane" lay-verify="required" autocomplete="off" value="{$setting['not_mathane']}" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn jijiao" data-type="setting" lay-filter="demo1">立即提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="layui-tab-item">
+                <!--预警阀值-->
+                <form class="layui-form" id="warning" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">油烟</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="soot" lay-verify="required" autocomplete="off" value="{$warning['soot']}" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">颗粒物</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="pellet" lay-verify="required" autocomplete="off" value="{$warning['pellet']}" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">非甲烷气体</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="not_mathane" lay-verify="required" autocomplete="off" value="{$warning['not_mathane']}" class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">清洗预警</label>
+                            <div class="layui-input-inline">
+                                <input type="number" name="wash_days" lay-verify="required" autocomplete="off" value="{$warning['wash_days']|default=''}" class="layui-input" placeholder="单位：天">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn jijiao" data-type="warning" lay-filter="demo1">立即提交</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="layui-tab-item">
+                <!--其他设置-->
+                <form class="layui-form" action="" id="weixin">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">域名</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="host" lay-verify="required" autocomplete="off" class="layui-input" value="{$weixin['host']}">
+                            </div>
+                            <div>
+                                公众号菜单相关链接
+                            </div>
+                            <table style="width: 100%;" id="menu_table">
+                                <tr>
+                                    <th style="width: 30%;">
+                                        <div class="layui-input-block">
+                                            菜单名
+                                        </div>
+                                    </th>
+                                    <th style="width: 50%;">
+                                        <div class="layui-input-block">
+                                            菜单链接
+                                        </div>
+                                    </th>
+                                    <th style="width: 10%;">
+                                        <div style="margin-left: 10px">操作</div>
+                                    </th>
+                                </tr>
+                                {notempty name="$weixin['links']"}
+                                {foreach $weixin['links'] as $value }
+                                <tr style="height: 40px;">
+                                    <td>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="menu_name[]" lay-verify="required" autocomplete="off" lay-verify="required" class="layui-input" value="{$value['menu_name']}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="link[]" lay-verify="required" autocomplete="off" lay-verify="required"  value="{$value['link']}"   class="layui-input">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="layui-btn-group" style="margin-left: 10px;">
+                                            <button type="button" data-num="1" class="layui-btn layui-btn-sm jia"><i class="layui-icon"></i></button>
+                                            <button type="button" class="layui-btn layui-btn-sm jian"><i class="layui-icon"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {/foreach}
+                                {else/}
+                                <tr style="height: 40px;">
+                                    <td>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="menu_name[]" lay-verify="required" autocomplete="off" lay-verify="required" class="layui-input">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="link[]" lay-verify="required" autocomplete="off" lay-verify="required" class="layui-input">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="layui-btn-group" style="margin-left: 10px;">
+                                            <button type="button" data-num="1" class="layui-btn layui-btn-sm jia"><i class="layui-icon"></i></button>
+                                            <button type="button" class="layui-btn layui-btn-sm jian"><i class="layui-icon"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {/notempty}
+
+                                <tr>
+                                    <td colspan="3">
+                                        <button type="button" class="layui-btn" data-type="weixin" lay-submit="" lay-filter="demo3">立即提交</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use('form', function(){
+        var form = layui.form
+        form.on('submit(demo3)', function(data){
+            var datas1 = data.field;
+            var links = [];
+            var i = 0;
+            while(true){
+                var ind = 'link['+i+']';
+                var ind1 = 'menu_name['+i+']';
+                if(ind in datas1){
+                    links[i] = {link: datas1[ind] , menu_name: datas1[ind1]};
+                    i++;
+                }else{
+                    break;
+                }
+            }
+            var datass = {};
+            datass.type = 'weixin';
+            datass.datas = {};
+            datass.datas.host = datas1.host;
+            datass.datas.links = links;
+            $.post('{:url("system/index")}', datass, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+            return false;
+        });
+    });
+    $('.jijiao').click(function(){
+        var type = $(this).data('type');
+        var datas = $('#'+type).serializeArray();
+        var can = {};
+        datas.forEach(function(value,index) {
+            can[value.name] = value.value;
+        })
+        $.post('{:url("system/index")}',{"type": type,"datas": can},function(res){layer.msg(res.msg)},'json')
+    })
+
+    $('#menu_table').on('click','.jia',function(){
+        var re_node = $(this).parent().parent().parent();
+        var re_content = re_node.prop("outerHTML");
+        var nums = $('#menu_table tr').length;
+        $(re_content).insertAfter(re_node);
+    })
+
+    $('#menu_table').on('click','.jian',function(){
+        var re_node_num = $('#menu_table').find('.jian').length;
+        if (re_node_num <= 1){
+            layer.msg('请留下最后一个菜单吧');
+            return false;
+        } else {
+            $(this).parent().parent().parent().remove();
+        }
+    })
+
+</script>
+

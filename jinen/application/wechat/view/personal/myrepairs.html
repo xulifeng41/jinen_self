@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>报修情况</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/zepto.weui.js"></script>
+    <script src="/static/js/weui/jquery-weui.js"></script>
+
+</head>
+
+<body ontouchstart>
+    {empty name="info"}
+    <div class="page-hd">
+        <h1 class="page-hd-title">
+            暂无报修信息
+        </h1>
+    </div>
+    {/empty}
+    <div class="page-bd-15" id="pdiv">
+
+    </div>
+    <div class="weui-loadmore" id="loading">
+        <i class="weui-loading"></i>
+        <span class="weui-loadmore__tips">正在加载</span>
+    </div>
+</body>
+<script>
+    var page=1;//当前页
+    $(document).ready(getbalancelist());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            getbalancelist();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function getbalancelist(){
+        $.post('{:url("personal/repsajax")}',{page:page},function(data)
+        {
+            if(data[1].length)
+            {
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //处理数据部分 .......
+                var str='';
+                for (var i = 0; i < data[1].length; i++) {
+                    str+="<div class=\"weui-cells__title\">报修内容</div>";
+                    str+="<div class=\"weui-cells\">";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>报修原因</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].reason+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>上报时间</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].create_time+"</div>";
+                    str+="</div>";
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/progress\")}?id="+data[1][i].id+">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>查看进度</p>";
+                    str+="</div>"
+                    str+="<div class=\"weui-cell__ft\">";
+                    str+="</div>";
+                    str+="</a>";
+                    str+="</div>";
+                    str+="</div>";
+                }
+                $("#pdiv").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+                {
+                    $("#loading>i").css("display","none");
+                    $("#loading>span").html("");
+                }
+
+        },'json')
+        page++;
+    }
+</script>
+</html>

@@ -1,0 +1,163 @@
+{include file='layout/header1'}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="good_name" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.good_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品类别</label>
+        <div class="layui-input-block">
+            <select name="cata_id" lay-filter="shi" lay-verify="required">
+                <option value="0">请选择商品类别</option>
+                {foreach $catess as $cate}
+                <option value="{$cate.id}" {eq name="$goodss.cata_id" value="$cate.cat_name"}selected{/eq}>{$cate.cat_name}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">商品简介</label>
+        <div class="layui-input-block">
+            <textarea placeholder="请输入内容" name="good_brief" class="layui-textarea">{$goodss.good_brief}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">商品图片</label>
+        <div class="layui-input-block">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn" id="test1">上传图片</button>
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" id="demo1" style="height: 5rem;" src="{$goodss.good_img}">
+                    <p id="demoText"></p>
+                </div>
+                <input type="hidden" name="good_img" id="tupian" lay-verify="good_img" value="{$goodss.good_img}">
+                <input type="hidden" name="is_change" id="is_change" lay-verify="" value="0">
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品价格</label>
+        <div class="layui-input-block">
+            <input type="text" name="price" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.price}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品单位</label>
+        <div class="layui-input-block">
+            <input type="text" name="unit" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.unit}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品库存</label>
+        <div class="layui-input-block">
+            <input type="text" name="stock" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.stock}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品规格</label>
+        <div class="layui-input-block">
+            <input type="text" name="specs" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.specs}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品产地</label>
+        <div class="layui-input-block">
+            <input type="text" name="address" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.address}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否上架</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_sale" lay-skin="switch" lay-filter="switchTest" {neq name="goodss.is_sale" value="0" } checked{/neq}  lay-text="上架|不上架">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn tijiao" lay-submit="" lay-filter="demo1">立即修改</button>
+        </div>
+    </div>
+</form>
+<script src="/static/layui/layui/layui.js"></script>
+<script>
+    layui.use(['form','upload'], function(){
+        var form = layui.form
+        var $ = layui.jquery
+            ,upload = layui.upload;
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '{:url("goods/upload")}'
+            ,field:'image'
+            ,before: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    $('#demo1').attr('src', result); //图片链接（base64）
+                });
+            }
+            ,done: function(res){
+                //如果上传失败
+                if(res.code > 0){
+                    return layer.msg('上传失败');
+                }
+                //上传成功
+                $('#tupian').val(res.data.src);
+                $('#is_change').val('1');
+                layer.msg('上传成功！');
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        //验证
+        form.verify({
+            good_img: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(value==null||value==''||value==undefined){
+                    return '请上传商品图片';
+                }
+            }
+        });
+
+
+
+        form.on('submit(demo1)', function(data){
+            var datas = data.field;
+            datas.id = '{$goodss.id}';
+            $.post('{:url("goods/edit_goods")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+    });
+
+
+
+
+</script>
+
+{include file='layout/footer1' /}

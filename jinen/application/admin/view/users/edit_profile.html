@@ -1,0 +1,123 @@
+{include file='layout/header1' /}
+<link rel="stylesheet" href="../../static/css/zTreeStyle.css">
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">登陆名</label>
+        <div class="layui-input-block">
+            <input type="text" name="user_name" lay-verify="required|username" autocomplete="off" class="layui-input" value="{$manager.user_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">真实姓名</label>
+        <div class="layui-input-block">
+            <input type="text" name="real_name" autocomplete="off" class="layui-input" value="{$manager.real_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">电话</label>
+        <div class="layui-input-block">
+            <input type="text" name="phone" lay-verify="phone" autocomplete="off" class="layui-input" value="{$manager.phone}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">权限分组</label>
+        <div class="layui-input-block">
+            <select name="auth_group" lay-verify="required" disabled>
+                <option value="{$manager.auth.id}" selected>{$manager.auth.name}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色</label>
+        <div class="layui-input-block">
+            <select name="role" lay-verify="required" id="role" disabled>
+                <option value="0">请为管理员指定角色</option>
+                <option value="1" {eq name="$manager.role" value="1"}selected{/eq}>平台人员</option>
+                <option value="2" {eq name="$manager.role" value="2"}selected{/eq}>代理商</option>
+                <option value="3" {eq name="$manager.role" value="3"}selected{/eq}>环保人员</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">级别</label>
+        <div class="layui-input-block">
+            <select name="level" lay-verify="level" id="level" disabled>
+
+                <option value="0">请为管理员指定级别</option>
+                <option value="1" {eq name="$manager.level" value="1"}selected{/eq}>省级管理员</option>
+                <option value="2" {eq name="$manager.level" value="2"}selected{/eq}>市级管理员</option>
+                <option value="3" {eq name="$manager.level" value="3"}selected{/eq}>县级管理员</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">区域</label>
+        <div class="layui-input-block">
+            <select name="province"  lay-filter="sheng" id="sheng" lay-verify="quyu1" disabled>
+                <option value="0">请选择省</option>
+                {foreach $provinces as $val}
+                <option value="{$val.id}" {eq name="$manager.province" value="$val.id"}selected{/eq}>{$val.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="city" id="shi" lay-filter="shi" lay-verify="quyu2" disabled>
+                <option value="0">请选择市</option>
+                {foreach $cities as $city}
+                <option value="{$city.id}" {eq name="$manager.city" value="$city.id"}selected{/eq}>{$city.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="area" id="qu" lay-filter="qu" lay-verify="quyu3" disabled>
+                <option value="0">请选择县/区</option>
+                {foreach $areas as $area}
+                <option value="{$area.id}" {eq name="$manager.area" value="$area.id"}selected{/eq}>{$area.name}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即修改</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+
+    layui.use('form', function(){
+        var form = layui.form;
+        //验证
+        form.verify({
+            username: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(!/^[a-zA-Z0-9]{6,12}$/.test(value)){
+                    return '请输入6~12位的数字或密码登录名'
+                }
+            },
+        });
+        form.on('submit(demo1)', function(data){
+            $.post('{:url("users/edit_profile")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+    });
+
+</script>
+
+{include file='layout/footer1' /}

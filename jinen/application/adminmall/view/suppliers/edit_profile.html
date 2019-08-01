@@ -1,0 +1,74 @@
+{include file='layout/header1' /}
+<link rel="stylesheet" href="/static/css/zTreeStyle.css">
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">登陆手机</label>
+        <div class="layui-input-block">
+            <input type="text" name="tel"  autocomplete="off" class="layui-input" value="{$suppliers.tel}" readonly>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">真实姓名</label>
+        <div class="layui-input-block">
+            <input type="text" name="real_name" autocomplete="off" class="layui-input" value="{$suppliers.real_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">区域</label>
+        <div class="layui-input-block">
+            <select name="province"  lay-filter="sheng" id="sheng" lay-verify="quyu1" disabled>
+                <option value="0">请选择省</option>
+                {foreach $provinces as $val}
+                <option value="{$val.id}" {eq name="$suppliers.province" value="$val.id"}selected{/eq}>{$val.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="city" id="shi" lay-filter="shi" lay-verify="quyu2" disabled>
+                <option value="0">请选择市</option>
+                {foreach $cities as $city}
+                <option value="{$city.id}" {eq name="$suppliers.city" value="$city.id"}selected{/eq}>{$city.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="area" id="qu" lay-filter="qu" lay-verify="quyu3" disabled>
+                <option value="0">请选择县/区</option>
+                {foreach $areas as $area}
+                <option value="{$area.id}" {eq name="$suppliers.area" value="$area.id"}selected{/eq}>{$area.name}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即修改</button>
+        </div>
+    </div>
+</form>
+<script src="/static/layui/layui/layui.js"></script>
+<script>
+
+    layui.use('form', function(){
+        var form = layui.form;
+
+        form.on('submit(demo1)', function(data){
+            $.post('{:url("suppliers/edit_profile")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+    });
+
+</script>
+
+{include file='layout/footer1' /}

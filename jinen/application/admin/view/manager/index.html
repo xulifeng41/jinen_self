@@ -1,0 +1,104 @@
+{layout name="layout/layout" /}
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
+    <button class="layui-btn layui-btn-xs" lay-event="editpwd">修改密码</button>
+    <button class="layui-btn layui-btn-xs" lay-event="del">删除</button>
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add">添加管理员</button>
+    </div>
+</script>
+
+<script>
+    layui.use('table', function(){
+        var devtable = layui.table;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("manager/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar: '#toolbarDemo'
+            ,defaultToolbar: []
+            ,title: '设备列表'
+            ,cols: [[ //表头
+                {field: 'id', title: 'ID',width: 40}
+                ,{field: 'user_name', title: '用户名'}
+                ,{field: 'real_name', title: '真实姓名'}
+                ,{field: 'phone', title: '电话'}
+                ,{field: 'is_delete', title: '状态'}
+                ,{field: 'create_time', title: '添加时间'}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo'}
+            ]]
+        });
+
+        //头工具栏事件
+        devtable.on('toolbar(test)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    layer.open({
+                        type: 2,
+                        title: '添加管理员',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("manager/add_manager")}'
+                    });
+                    break;
+            };
+        });
+        //监听事件
+        devtable.on('tool(test)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title: '管理员详情',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("manager/edit")}?id='+data.id
+                    });
+                    break;
+                case 'del':
+                    //询问框
+                    layer.confirm('确定要删除该管理员？', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("manager/del_manager")}?id='+obj.data.id,function(res){
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                window.location.reload();
+                            },800)
+                        },'json');
+                    }, function(){
+
+                    });
+                    break;
+                case 'editpwd':
+                    layer.open({
+                        type: 2,
+                        title: '修改密码',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("manager/edit_pwd")}?id='+data.id
+                    });
+                    break;
+            };
+        });
+
+    });
+
+</script>

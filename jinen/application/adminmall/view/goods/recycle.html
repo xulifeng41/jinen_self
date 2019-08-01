@@ -1,0 +1,78 @@
+
+{layout name="layout/layout" /}
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">恢复</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script>
+    layui.use('table', function(){
+        var table = layui.table,form = layui.form;
+        table.render({
+            elem: '#demo'
+            ,url: '{:url("goods/recycle")}' //数据接口 recover
+            ,page: true //开启分页
+            ,toolbar:'#toolbarDemo'
+            ,defaultToolbar:[]
+            ,title: '商品列表'
+            ,cols: [[ //表头
+                {field:'id',title:'序号',width:40,type:'numbers'}
+                ,{field: 'good_name', title: '商品名称'}
+                ,{field: 'cata_id', title: '类属于'}
+                ,{field: 'price', title: '商品价格'}
+                ,{field: 'is_sale', title: '是否上架'}
+                ,{field: 'stock', title: '商品库存'}
+                ,{field: 'good_img', title: '图片' , templet:function(d){return '<img src="'+d.good_img+'" style="height:2rem">'}}
+                ,{field: 'is_check', title: '商品是否过审'}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo'}
+            ]]
+        });
+
+
+
+
+
+        table.on('tool(test)', function(obj){
+            switch(obj.event){
+                case 'edit':
+                    //询问框
+                    layer.confirm('确定要恢复该商品？', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("goods/recover")}?id='+obj.data.id,function(res){
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                window.location.reload();
+                            },800)
+                        },'json');
+                    }, function(){
+
+                    });
+                    break;
+                case 'del':
+                    //询问框
+                    layer.confirm('确定要删除该商品？', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("goods/del")}?type=del&id='+obj.data.id,function(res){
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                window.location.reload();
+                            },800)
+                        },'json');
+                    }, function(){
+
+                    });
+                    break;
+            };
+        });
+
+    });
+</script>
+
+
+

@@ -1,0 +1,91 @@
+{layout name="layout/layout" /}
+<script src="../static/layui/layui/layui.all.js"></script>
+
+<div class="layui-col-md6">
+    <div class="layui-card">
+        <div class="layui-card-header">待办事项</div>
+        <div class="layui-card-body">
+            <div class="layui-carousel layadmin-carousel layadmin-backlog" lay-anim="" lay-indicator="inside" lay-arrow="none" style="width: 100%; height: 280px;">
+                <div carousel-item="">
+                    <ul class="layui-row layui-col-space10 layui-this">
+                        {if  $Think.session.is_supplier == 1 AND  $Think.session.is_agent == 1 }
+                        <li class="layui-col-xs6">
+                            <a href={:url('/adminmall/orders')} class="layadmin-backlog-body">
+                                <h3>待发货订单</h3>
+                                <p id="num1"></p>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <a lay-href="" class="layadmin-backlog-body">
+                                <h3>账号余额</h3>
+                                <p id="balance1"></p>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <a href="" class="layadmin-backlog-body">
+                                <h3>区域下待审核商品</h3>
+                                <p id="checknum1">123123</p>
+                            </a>
+                        </li>
+                    {elseif $Think.session.is_supplier == 1 /}
+                        <li class="layui-col-xs6">
+                            <a href={:url('/adminmall/orders')} class="layadmin-backlog-body">
+                                <h3>待发货订单</h3>
+                                <p id="num2"></p>
+                            </a>
+                        </li>
+                        <li class="layui-col-xs6">
+                            <a lay-href="" class="layadmin-backlog-body">
+                                <h3>账号余额</h3>
+                                <p id="balance2"></p>
+                            </a>
+                        </li>
+                    {else /}
+                        <li class="layui-col-xs6">
+                            <a href="" class="layadmin-backlog-body">
+                                <h3>区域下待审核商品</h3>
+                                <p id="checknum2"></p>
+                            </a>
+                        </li>
+                    {/if}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <script>
+        var is_supplier="{$Think.session.is_supplier}";
+        var is_agent="{$Think.session.is_agent}";
+        console.log(is_supplier);
+        if(is_supplier ==1 && is_agent == 1)
+        {
+            $(document).ready(getd());
+            function getd() {
+                $.post('{:url("index/console")}',{},function(data)
+                {
+                    $("#num1").html(data.num);
+                    $("#balance1").html(data.balance);
+                    $("#checknum1").html(1231231);
+                },'json')
+            }
+        }else if(is_supplier == 1)
+        {
+            $(document).ready(getd());
+            function getd() {
+                $.post('{:url("index/console")}',{},function(data)
+                {
+                    $("#num2").html(data.num);
+                    $("#balance2").html(data.balance);
+                },'json')
+            }
+        }else
+            {
+                $("#checknum2").html(1231231);
+            }
+    </script>
+
+
+
+
+

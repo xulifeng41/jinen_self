@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>报修进去</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/zepto.weui.js"></script>
+
+</head>
+
+<body ontouchstart>
+<div class="page-bd-15">
+    <div class="weui-cells">
+        <div class="weui-cell">
+            <div class="weui-cell__bd">
+                <p>报修进度</p>
+            </div>
+            <div class="weui-cell__ft" id="pro">{$info.progress}</div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var color="{$info.color}";
+    $("#pro").css("color",color);
+</script>
+</html>

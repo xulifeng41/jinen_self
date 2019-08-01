@@ -1,0 +1,181 @@
+{layout name="layout/layout" /}
+
+<div class="demoTable" style="padding: 0.5rem 0.8rem;">
+
+    <form class="layui-form layui-form-pane layui-inline" action="">
+        <div class="layui-form-item" style="margin-bottom: 0;">
+            <label class="layui-form-label">地区选择</label>
+            <div class="layui-input-inline">
+                <select name="quiz1"  lay-filter="sheng" id="sheng">
+                    <option value="0">请选择省</option>
+                    {foreach $provinces as $val}
+                    <option value="{$val.id}">{$val.name}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="quiz2" id="shi" lay-filter="shi">
+                    <option value="0">请选择市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="quiz3" id="qu" lay-filter="qu">
+                    <option value="0">请选择县/区</option>
+                </select>
+            </div>
+            {if(ADROLE!=3)}
+            <label class="layui-form-label">用户类型</label>
+            <div class="layui-input-inline">
+                <select name="quiz1" lay-filter="shang" id="shang">
+                    <option value="1" selected>普通客户</option>
+                    <option value="2">销售人员</option>
+                    <option value="3">安装人员</option>
+                </select>
+            </div>
+            {/if}
+        </div>
+    </form>
+    <button type="button" class="layui-btn" data-type="reload">搜索</button>
+    <button type="button" class="layui-btn" data-type="gaoji">高级搜索</button>
+    <div style="width: 100%;margin-top:10px;display:none" id="gaojisearch">
+        <form class="layui-form layui-form-pane layui-inline" action="">
+            <div class="layui-form-item" style="margin-bottom: 0;">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">客户名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="cus_name" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">客户店名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" id="shop_name" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
+</script>
+
+<script>
+    layui.use('table', function(){
+        var devtable = layui.table;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("customer/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar: false
+            ,title: '设备列表'
+            ,cols: [[ //表头
+                {field: 'id', title: 'ID',width: 50}
+                ,{field: 'cus_name', title: '客户名'}
+                ,{field: 'shop_name', title: '客户店名'}
+                ,{field: 'headimg', title: '客户头像',templet:function(d){
+                    return '<img src="'+d.image+'" style="height: 2rem ;">';
+                    }}
+                ,{field: 'di_zhi', title: '地址'}
+                ,{field: 'phone', title: '电话'}
+                ,{field: 'create_time', title: '注册时间'}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+            ]]
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var sheng = $('#sheng').val();
+                var shi = $('#shi').val();
+                var qu = $('#qu').val();
+                var shang = $('#shang').val();
+                var cus_name = $('#cus_name').val();
+                var shop_name = $('#shop_name').val();
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        province: sheng,
+                        city: shi,
+                        area: qu,
+                        role: shang,
+                        cus_name: cus_name,
+                        shop_name: shop_name
+                    }
+                });
+            },
+            gaoji:function(){
+                $('#gaojisearch').toggle();
+            }
+
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听事件
+        devtable.on('tool(test)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title: '用户详情',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("customer/edit")}?id='+data.id
+                    });
+                    break;
+            };
+        });
+
+    });
+
+    layui.use('form', function(){
+        var form = layui.form;
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#shi').html(oldshi);
+            $('#qu').html(oldarea);
+            region(oldshi,$('#shi'),data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#qu').html(oldarea);
+            region(oldarea,$('#qu'),data.value,form);
+        });
+
+    });
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+</script>

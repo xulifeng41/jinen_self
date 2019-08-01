@@ -1,0 +1,88 @@
+
+{layout name="layout/layout" /}
+<div class="demoTable" style="padding: 0.5rem 0.8rem;">
+    <form class="layui-form layui-form-pane layui-inline" action=""  id="gaoji">
+        <div class="layui-form-item" style="margin-bottom: 0;">
+            <label class="layui-form-label">提现进度</label>
+            <div class="layui-input-inline">
+                <select name="progress"  lay-filter="sheng" id="progress">
+                    <option value="0" >全部</option>
+                    <option value="1">等待审核</option>
+                    <option value="2">提现成功</option>
+                </select>
+            </div>
+        </div>
+    </form>
+    <button class="layui-btn" data-type="gaoji">搜索</button>
+    <button class="layui-btn layui-btn-normal" id="case_out">
+        我要提现
+    </button>
+</div>
+<script type="text/html" id="switch1">
+    {{# if (d.progress=='1') { }}  
+    发起提现申请
+    {{# } else if(d.progress=='2') { }}  
+    提现成功
+    {{# } }}  
+</script>
+<table id="demo" lay-filter="test"></table>
+<script>
+    layui.use(['table','form'], function(){
+        var table = layui.table,form = layui.form;
+        var layer = layui.layer;         //弹层
+        var $ = layui.jquery;
+        table.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("bill/index")}' //数据接口
+            ,page: true //开启分页
+            // ,toolbar:'#toolbarDemo'
+            // ,defaultToolbar:[]
+            ,title: '流水列表'
+            ,cols: [[ //表头
+                {field:'id',title:'序号',width:40,type:'numbers'}
+                ,{field: 'cash', title: '提现金额',width:100}
+                ,{field: 'account', title: '提现账号'}
+                ,{field: 'account_name', title: '提现人姓名'}
+                ,{field: 'account_bank', title: '提现账号开户行'}
+                ,{field: 'progress', title: '提现进度',templet: '#switch1'}
+                ,{field: 'create_time', title: '申请时间'}
+            ]]
+        });
+
+        $("#case_out").click(function(){
+            layer.open({
+                type: 2,
+                title: '添加提现信息',
+                shadeClose: true,
+                shade: false,
+                maxmin: true, //开启最大化最小化按钮
+                area: ['30vw', '80vh'],
+                content: '{:url("bill/cash_out")}'
+            });
+        })
+
+        var $ = layui.$, active = {
+            gaoji: function(){
+                var progress = $('#progress').val();
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        progress: progress
+                    }
+                });
+            }
+
+        };
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+</script>
+
+
+

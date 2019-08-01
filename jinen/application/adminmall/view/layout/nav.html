@@ -1,0 +1,132 @@
+<div class="layui-header">
+    <div class="layui-logo">
+        <img src="" alt="" style="height: 50px;">
+        金恩小厨供应商后台
+    </div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+    <ul class="layui-nav layui-layout-left">
+        <li class="layui-nav-item"><a href="{:url('/adminmall')}">控制台</a></li>
+    </ul>
+    <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+            <a href="javascript:;">
+                <!--<img src="" class="layui-nav-img">-->
+                {$sup_user.sup_name}
+            </a>
+            <dl class="layui-nav-child">
+                <dd><a href="javascript:void(0)" class="dianji" data-go="edit">基本资料</a></dd>
+                <dd><a href="javascript:void(0)" class="dianji" data-go="editpwd">安全设置</a></dd>
+            </dl>
+        </li>
+        <li class="layui-nav-item"><a href="{:url('suppliers/login_out')}">退了</a></li>
+    </ul>
+</div>
+{$Think.session.is_supplier}
+<div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+            {if  $Think.session.is_supplier == 1 AND  $Think.session.is_agent == 1 }
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">商品管理</a>
+                <dl class="layui-nav-child">
+                    <dd >
+                        <a href="{:url('goods/index')}">商品列表</a>
+                    </dd>
+                    <dd >
+                        <a href="{:url('goods/recycle')}">商品回收站</a>
+                    </dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">订单管理</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a href="{:url('orders/index')}">订单列表</a>
+                    </dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">资金管理</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a href="{:url('bill/index')}">资金流水</a>
+                    </dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">区域商品审核</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a href="{:url('goods/is_check')}">需审核商品</a>
+                    </dd>
+                </dl>
+            </li>
+            {elseif $Think.session.is_supplier == 1 /}
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">商品管理</a>
+                <dl class="layui-nav-child">
+                    <dd >
+                        <a href="{:url('goods/index')}">商品列表</a>
+                    </dd>
+                    <dd >
+                        <a href="{:url('goods/recycle')}">商品回收站</a>
+                    </dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">订单管理</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a href="{:url('orders/index')}">订单列表</a>
+                    </dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">资金管理</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a href="{:url('bill/index')}">资金流水</a>
+                    </dd>
+                </dl>
+            </li>
+            {else /}
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">区域商品审核</a>
+                <dl class="layui-nav-child">
+                    <dd>
+                        <a href="{:url('goods/is_check')}">需审核商品</a>
+                    </dd>
+                </dl>
+            </li>
+            {/if}
+        </ul>
+    </div>
+</div>
+<script src="/static/layui/layui/layui.js"></script>
+
+<script>
+    $('.dianji').click(function(){
+        var go = $(this).data('go');
+        var url = '';
+        var now_id = '{$sup_user.id}';
+        switch (go){
+            case 'edit':
+                url = '{:url("suppliers/edit_profile")}';
+                break;
+            case 'editpwd':
+                url = '{:url("suppliers/edit_pwd")}';
+                break;
+        }
+        layer.open({
+            type: 2,
+            title: '管理员详情',
+            shadeClose: true,
+            shade: false,
+            skin: 'layui-layer-molv',
+            maxmin: true, //开启最大化最小化按钮
+            area: ['30vw', '70vh'],
+            content: url+'?id='+now_id
+        });
+    })
+</script>

@@ -1,0 +1,110 @@
+{include file='layout/header1' /}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">型号</label>
+        <div class="layui-input-block">
+            <input type="text" name="version_name" lay-verify="required" autocomplete="off" class="layui-input" value="{$device.version_name|default=''}">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">型号简介</label>
+        <div class="layui-input-block">
+            <textarea placeholder="请输入内容" name="instruction" class="layui-textarea">{$device.instruction|default=''}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">型号图片</label>
+        <div class="layui-input-block">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn" id="test1">上传图片</button>
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" src="{$device.image|default=''}" id="demo1" style="height: 5rem;">
+                    <p id="demoText"></p>
+                </div>
+                <input type="hidden" name="image" id="tupian" value="{$device.image|default=''}">
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">详细介绍</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea layui-hide" name="content" lay-verify="content" id="LAY_demo_editor">{php}if(isset($device)){ echo $device['content']; }{/php}</textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn tijiao" lay-submit="" lay-filter="demo1">立即{if(isset($device))}修改{else/}添加{/if}</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+    layui.use(['form', 'layedit','upload'], function(){
+        var form = layui.form
+            ,layedit = layui.layedit
+        //创建一个编辑器
+        var editIndex = layedit.build('LAY_demo_editor');
+        var $ = layui.jquery
+            ,upload = layui.upload;
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '{:url("version/upload")}'
+            ,field:'image'
+            ,before: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    $('#demo1').attr('src', result); //图片链接（base64）
+                });
+            }
+            ,done: function(res){
+                console.log(res);
+                //如果上传失败
+                if(res.code > 0){
+                    return layer.msg('上传失败');
+                }
+                //上传成功
+                $('#tupian').val(res.data.src);
+                layer.msg('上传成功！');
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+    });
+    var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+    $('.tijiao').click(function(){
+        var form_data = $('.layui-form').serializeArray();
+        var datas = {};
+        form_data.forEach(function(value,index){
+            datas[value.name] = value.value;
+        });
+        '{if(!empty($device))}'
+            datas.id = "{$device.id}";
+            datas.type = "edit";
+        '{/if}'
+
+        $.post('{:url("version/add_version")}',datas,function(res){
+            if(res.code==200){
+                layer.msg('添加成功');
+                setTimeout(function(){
+                    window.parent.location.reload();
+                },800);
+            }
+            layer.msg('添加失败！');
+            },'json')
+    })
+
+</script>
+
+{include file='layout/footer1' /}

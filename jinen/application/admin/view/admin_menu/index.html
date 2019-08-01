@@ -1,0 +1,105 @@
+{layout name="layout/layout" /}
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add_menu">
+            添加{notempty name='parent_id'}子{/notempty}菜单
+        </button>
+    </div>
+</script>
+
+<script type="text/html" id="titleTpl">
+    {{# if(d.is_menu==1){ }}
+        <a href="{:url('admin_menu/index')}?parent_id={{d.id}}" class="layui-table-link">{{d.title}}</a>
+    {{# }else{ }}
+        {{d.title}}
+    {{# } }}
+</script>
+
+<script>
+    var parent_id = {$parent_id};
+    layui.use('table', function(){
+        var table = layui.table;
+        table.render({
+            elem: '#demo'
+            ,url: '{:url("admin_menu/index")}?parent_id={$parent_id}' //数据接口
+            ,page: true //开启分页
+            ,toolbar:'#toolbarDemo'
+            ,defaultToolbar:[]
+            ,title: '菜单列表'
+            ,cols: [[ //表头
+                {field: 'id', title: 'ID'}
+                ,{field: 'title', title: '标题',templet:'#titleTpl'}
+                ,{field: 'url', title: '连接'}
+                ,{field: 'is_show', title: '状态'}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+            ]]
+        });
+
+        //头工具栏事件
+        table.on('toolbar(test)', function(obj){
+            var title = '';
+            if(parent_id==0){
+                title = '添加菜单';
+            }else{
+                title = '添加子菜单';
+            }
+            switch(obj.event){
+                case 'add_menu':
+                    layer.open({
+                        type: 2,
+                        title: title,
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("admin_menu/add_menu")}?parent_id={$parent_id}'
+                    });
+                    break;
+            };
+        });
+
+        //操作工具栏事件
+        table.on('tool(test)', function(obj){
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title: '添加菜单',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("admin_menu/add_menu")}?id='+obj.data.id+'&parent_id={$parent_id}'
+                    });
+                    break;
+                case 'del':
+                    //询问框
+                    layer.confirm('确定要删除这个菜单？', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("admin_menu/del")}?id='+obj.data.id,
+                            function(res){
+                                layer.msg(res.msg);
+                                if(res.code ==200){
+                                    setTimeout(function () {
+                                        window.location.reload();
+                                    },800)
+                                }
+                            },'json');
+                    }, function(){
+
+                    });
+                    break;
+            };
+        });
+
+    });
+</script>

@@ -1,0 +1,286 @@
+{include file='layout/header1'}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;" lay-filter="updateForm">
+
+    <input type="text" name="id" lay-verify="required" style="display: none;">
+        <div class="layui-col-xs10 layui-col-xs-offset1">
+            <div class="layui-form-item">
+                <div id="uploadImg" class="layui-upload">
+                    <div class="layui-upload-list">
+                        <table class="layui-table" style="text-align: center;">
+                            <thead>
+                            <tr>
+                                <th style="text-align: center;">图片预览</th>
+                                <th style="text-align: center;">状态</th>
+                                <th style="text-align: center;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="imgList"></tbody>
+                        </table>
+                    </div>
+                    <div class="layui-row">
+                        <div class="layui-col-xs4">
+                            <button type="button" class="layui-btn layui-btn-sm" id="upload">
+                                <i class="layui-icon">&#xe67c;</i>上传商品轮播图
+                            </button>
+                        </div>
+                        <div class="layui-col-xs3 layui-col-xs-offset5">
+                            <button type="button" class="layui-btn layui-btn-fluid layui-btn-sm" id="startUpload">
+                                开始上传
+                            </button>
+                        </div>
+                    </div>
+                    <div style="color: #c2c2c2;margin:10px 0;">温馨提示: 总共最多上传三张图片,
+                        上传图片必须宽大于高
+                    </div>
+                </div>
+                <input type="text" name="old_show_imgs" style="display: none;">
+                <input type="text" name="show_imgs" id="imgInput" lay-verify="required" style="display: none;">
+            </div>
+        </div>
+    <div class="layui-col-xs10 layui-col-xs-offset1">
+        <div class="layui-form-item">
+                <button type="button" class="layui-btn layui-btn-normal" lay-submit="" lay-filter="demo1">提交修改</button>
+        </div>
+    </div>
+</form>
+<script src="/static/layui/layui/layui.js"></script>
+<script>
+
+var gid="{$good.id}";
+layui.use(['form', 'element', 'jquery', 'upload'], function () {
+    var form = layui.form;
+    var element = layui.element;
+    var $ = layui.jquery;
+    var upload = layui.upload;
+    var demoListView = $('#imgList');
+    var totalArray = new Array();
+    var uploadInst = upload.render({
+        elem: '#upload' //绑定元素
+        , url: '{:url("goods/uploads")}' //上传接口
+        , accept: 'images'  // 允许上传的文件类型
+        // , acceptMime: 'image/jpg,image/png'   // (只支持jpg和png格式，多个用逗号隔开),
+        , auto: false //选择文件后不自动上传
+        , bindAction: '#startUpload' //指向一个按钮触发上传
+        , multiple: true   // 开启多文件上传
+        , number: 3    //  同时上传文件的最大个数
+        ,field:'images[]'
+        , choose: function (obj) {
+            var files = this.files = UPLOAD_FILES = obj.pushFile(); //将每次选择的文件追加到文件队列
+            var totalArray = Object.keys(files);
+            var flag = true;
+                //读取本地文件
+                obj.preview(function (index, file, result) {
+                    // 检查上传文件的个数
+                    if (totalArray.length < (4 - demoListView.data("choiceTotal")))
+                    {
+                        var img = new Image();
+                        img.src = result;
+                        img.onload = function () { //初始化夹在完成后获取上传图片宽高，判断限制上传图片的大小。
+                            if(img.width>img.height )
+                            {
+                                var tr = $(['<tr id="upload-' + index + '">'
+                                    , '<td><img src="' + result + '" alt="' + file.name + '" class="layui-upload-img" style="height: 66px;width:100px;"></td>'
+                                    , '<td>等待上传</td>'
+                                    , '<td>'
+                                    , '<button class="layui-btn layui-btn-sm demo-reload layui-hide">重传</button>'
+                                    , '<button class="layui-btn layui-btn-sm layui-btn-danger demo-delete">删除</button>'
+                                    , '</td>'
+                                    , '</tr>'].join(''));
+
+                                //单个重传
+                                tr.find('.demo-reload').on('click', function () {
+                                    obj.upload(index, file);
+                                });
+
+                                //删除
+                                tr.find('.demo-delete').on('click', function () {
+                                    delete files[index]; //删除对应的文件
+                                    tr.remove();
+                                    uploadInst.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+                                    // console.log('dtotalArray');
+                                    // console.log(totalArray);
+                                    totalArray.splice(totalArray.indexOf(index), 1);
+                                    // console.log('ddtotalArray');
+                                    // console.log(totalArray);
+                                });
+
+                                var $currentTotal = demoListView.data("choiceTotal");
+                                // console.log('1demoListView');
+                                // console.log($currentTotal);
+                                demoListView.data("choiceTotal", $currentTotal + 1);
+                                demoListView.append(tr);
+                            }
+                            else
+                            {
+                                delete files[index];
+                                flag = false;
+                                layer.msg("必须上传宽图(图片宽度大于高度)");
+                                return false;
+                            }
+                        }
+                        return flag;
+                    }else
+                    {
+                        // 超出上传最大文件
+                        layer.msg("上传文件最大不超过3个");
+                        totalArray.pop();
+                        delete files[index];
+                    }
+
+                });
+        }
+        , done: function (res, index, upload) {
+            if (res.code == 0) { //上传成功
+                // 上传成功后将图片路径拼接到input中，多个路径用","分割
+                var inputVal = document.getElementById("imgInput").value;
+                var valData = "";
+                if (inputVal) {
+                    valData = inputVal + "-" + res.data.src;
+                } else {
+                    valData = res.data.src;
+                }
+                document.getElementById("imgInput").value = valData;
+                var tr = demoListView.find('tr#upload-' + index)
+                    , tds = tr.children();
+                tds.eq(1).html('<span style="color: #5FB878;">上传成功</span>');
+                tds.eq(2).html(''); //清空操作
+                return delete this.files[index]; //删除文件队列已经上传成功的文件
+            }
+            this.error(index, upload);
+        }
+        , error: function (index, upload) {
+            var tr = demoListView.find('tr#upload-' + index)
+                , tds = tr.children();
+            tds.eq(1).html('<span style="color: #FF5722;">上传失败</span>');
+            tds.eq(2).find('.demo-reload').removeClass('layui-hide'); //显示重传
+        }
+    });
+    // 显示表单
+    $.ajax({
+        url: '{:url("goods/show_imgs")}?type=1&id='+gid,
+        type: "post",
+        dataType: "json",
+        success: function (response) {
+            var imgList = response.imgs_list;
+            demoListView.data("choiceTotal", imgList.length);
+            if (imgList) {
+                for (var i = 0; i < imgList.length; i++) {
+                    var trEle = document.createElement("tr");
+                    var trHtml = '<td><img src="' + imgList[i] + '" alt="" class="layui-upload-img" style="height: 66px;width:100px;"></td>'
+                        + '<td>等待修改</td><td><button type="button" class="layui-btn layui-btn-sm edit-btn" csid="choice_' + i
+                        + '" startid="startUpload_' + i + '">修改</button><button type="button" class="layui-btn layui-btn-normal layui-btn-sm layui-hide choice-btn" id="choice_' + i
+                        + '" style="margin-right: 10px;">选择图片</button><button type="button" class="layui-btn layui-btn-sm layui-hide upload-btn" id="startUpload_' + i + '">上传</button>' +
+                        '<button type="button" class="layui-btn layui-btn-sm delete-btn" id="delete_' + i + '">删除</button></td>';
+                    trEle.innerHTML = trHtml;
+                    $("#imgList").append(trEle);
+                }
+            }
+            form.val("updateForm", {
+                "id": gid,
+                "show_imgs": response.show_img,
+                "old_show_imgs": response.show_img
+            });
+            form.render();
+        }
+    });
+    // 处理图片的修改
+    demoListView.on('click', '.edit-btn', function () {
+        var csid = $(this).attr("csid");
+        var startid = $(this).attr("startid");
+        var currentIndex = parseInt(csid.split("_")[1]);
+        var $currentTr = $(this).parent().parent();
+        $(this).addClass("layui-hide");
+        $("#" + csid).removeClass("layui-hide");
+        $("#" + startid).removeClass("layui-hide");
+        var uploadEdit = upload.render({
+            elem: '#' + csid
+            , url: '{:url("goods/uploads")}'
+            , accept: 'images'  // 允许上传的文件类型
+            , auto: false
+            , bindAction: '#' + startid
+            ,field:'images[]'
+            , choose: function (obj) {
+                //预读本地文件示例，不支持ie8
+                obj.preview(function (index, file, result) {
+                    $currentTr.children().eq(0).html('<img src="' + result + '" alt="" class="layui-upload-img" style="height: 66px;width:100px;">') //图片链接（base64）
+                });
+            }
+            , done: function (res, index, upload) {
+                if (res.code == 0) {
+                    //上传成功
+                    var InputTag = $("#imgInput");
+                    var oldInputStrList = InputTag.val().split("-");
+                    oldInputStrList[currentIndex] = res.data.src;
+                    var newInputStr = oldInputStrList.join("-");
+                    InputTag.val(newInputStr);
+                    $currentTr.children().eq(1).text("修改成功");
+                    $currentTr.children().eq(2).html("");
+                } else {
+                    this.error(index, upload);
+                }
+            }
+            , error: function (index, upload) {
+                //演示失败状态，并实现重传
+                var fileHtml = '<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload" style="width:50px;height:30px;text-align:center;line-height:30px;">重试</a>';
+                $currentTr.children().eq(2).html(fileHtml);
+                $currentTr.find('.demo-reload').on('click', function () {
+                    uploadEdit.upload();
+                });
+            }
+        });
+    });
+    // 处理图片的删除
+    demoListView.on("click", '.delete-btn', function () {
+        var delid = this.id;
+        var currentDelIndex = parseInt(delid.split("_")[1]);
+        var theCurrentTr = $(this).parent().parent();
+        // 更新表格中当前行后面每一行的序号
+        // 找到当前行后面的每一行
+        theCurrentTr.nextAll().each(function () {
+            // each中的this和外面的this不一样了!
+            var oldCsid = $(this).children().eq(2).find(".edit-btn").attr("csid");
+            var oldStarid = $(this).children().eq(2).find(".edit-btn").attr("startid");
+            var oldChoiceid = $(this).children().eq(2).find(".choice-btn").attr("id");
+            var oldUploadid = $(this).children().eq(2).find(".upload-btn").attr("id");
+            var oldDelid = $(this).children().eq(2).find(".delete-btn").attr("id");
+            if (oldDelid && oldCsid) {
+                $(this).children().eq(2).find(".edit-btn").attr("csid", oldCsid.split("_")[0] + "_" + (oldCsid.split("_")[1] - 1));
+                $(this).children().eq(2).find(".edit-btn").attr("startid", oldStarid.split("_")[0] + "_" + (oldStarid.split("_")[1] - 1));
+                $(this).children().eq(2).find(".choice-btn").attr("id", oldChoiceid.split("_")[0] + "_" + (oldChoiceid.split("_")[1] - 1));
+                $(this).children().eq(2).find(".upload-btn").attr("id", oldUploadid.split("_")[0] + "_" + (oldUploadid.split("_")[1] - 1));
+                $(this).children().eq(2).find(".delete-btn").attr("id", oldDelid.split("_")[0] + "_" + (oldDelid.split("_")[1] - 1));
+            }
+        });
+        // 找到当前行,删除
+        theCurrentTr.remove();
+        // 修改新的input框中的值
+        var delInputTag = $("#imgInput");
+        var oldDelInputStrList = delInputTag.val().split("-");
+        oldDelInputStrList.splice(currentDelIndex, 1);
+        var delnewInputStr = oldDelInputStrList.join("-");
+        delInputTag.val(delnewInputStr);
+        // 修改全局可上传文件的总个数
+        var $currentTotal = demoListView.data("choiceTotal");
+        demoListView.data("choiceTotal", $currentTotal - 1);
+    });
+    // 提交
+    form.on('submit(demo1)', function(data){
+        $.post('{:url("goods/show_imgs")}?type=2', data.field, function (res) {
+            if (res.code == 200) {
+                // console.log(res.id);
+                layer.msg(res.msg);
+                setTimeout(function(){
+                    window.parent.location.reload();
+                },800)
+                return false;
+            }
+            layer.msg(res.msg);
+        }, 'json')
+    });
+});
+
+
+</script>
+
+{include file='layout/footer1' /}

@@ -1,0 +1,82 @@
+<div class="layui-header">
+    <div class="layui-logo">
+        <img src="{$admin_user.company.logo}" alt="" style="height: 50px;">
+        {$admin_user.company.name}
+    </div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+    <ul class="layui-nav layui-layout-left">
+        <li class="layui-nav-item"><a href="{:url('index/index')}">控制台</a></li>
+<!--        <li class="layui-nav-item"><a href="">商品管理</a></li>-->
+<!--        <li class="layui-nav-item"><a href="">用户</a></li>-->
+<!--        <li class="layui-nav-item">-->
+<!--            <a href="javascript:;">其它系统</a>-->
+<!--            <dl class="layui-nav-child">-->
+<!--                <dd><a href="">邮件管理</a></dd>-->
+<!--                <dd><a href="">消息管理</a></dd>-->
+<!--                <dd><a href="">授权管理</a></dd>-->
+<!--            </dl>-->
+<!--        </li>-->
+    </ul>
+    <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+            <a href="javascript:;">
+                <img src="{$admin_user.company.logo}" class="layui-nav-img">
+                {$admin_user.user_name}
+            </a>
+            <dl class="layui-nav-child">
+                <dd><a href="javascript:void(0)" class="dianji" data-go="edit">基本资料</a></dd>
+                <dd><a href="javascript:void(0)" class="dianji" data-go="editpwd">安全设置</a></dd>
+            </dl>
+        </li>
+        <li class="layui-nav-item"><a href="{:url('users/login_out')}">退了</a></li>
+    </ul>
+</div>
+
+<div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+            {foreach $menus as $val}
+            <li class="layui-nav-item {if(isset($val['is_now']))}layui-nav-itemed{/if}">
+                <a class="" href="javascript:;">{$val['title']}</a>
+                <dl class="layui-nav-child">
+                    {foreach $val['child_menu'] as $val1}
+                    <dd {if(isset($val1['is_now']))} class="layui-this"{/if}>
+                        <a href="{:url($val1['action'])}">{$val1['title']}</a>
+                    </dd>
+                    {/foreach}
+                </dl>
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</div>
+<script src="../static/layui/layui/layui.js"></script>
+
+<script>
+    $('.dianji').click(function(){
+        var go = $(this).data('go');
+        var url = '';
+        var now_id = '{$admin_user.id}';
+        switch (go){
+            case 'edit':
+                url = '{:url("users/edit_profile")}';
+                break;
+            case 'editpwd':
+                url = '{:url("users/edit_pwd")}';
+                break;
+        }
+        layer.open({
+            type: 2,
+            title: '管理员详情',
+            shadeClose: true,
+            shade: false,
+            skin: 'layui-layer-molv',
+            maxmin: true, //开启最大化最小化按钮
+            area: ['30vw', '70vh'],
+            content: url+'?id='+now_id
+        });
+
+
+    })
+</script>

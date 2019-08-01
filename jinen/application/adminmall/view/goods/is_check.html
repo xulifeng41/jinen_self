@@ -1,0 +1,71 @@
+
+{layout name="layout/layout" /}
+
+<table id="demo" lay-filter="test"></table>
+<script type="text/html" id="barDemo" class="tudoTpl">
+    <a class="layui-btn layui-btn-xs" lay-event="agree">同意</a>
+</script>
+<script>
+    layui.use(['table','form'], function(){
+        var devtable = layui.table,form = layui.form;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("goods/is_check")}?type=1' //数据接口
+            ,page: true //开启分页
+            ,toolbar: false
+            ,title: '待审核列表'
+            ,cols: [[ //表头
+                {field:'id',title:'序号',width:40,type:'numbers'}
+                ,{field: 'good_name', title: '商品名称'}
+                ,{field: 'cata_id', title: '类属于'}
+                ,{field: 'price', title: '商品价格'}
+                ,{field: 'stock', title: '商品库存'}
+                ,{field: 'good_img', title: '图片' , templet:function(d){return '<img src="'+d.good_img+'" style="height:2rem">'}}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo'}
+            ]]
+            ,done:function(res,curr,count){
+                hoverOpenImg();//显示大图
+                $('table tr').on('click',function(){
+                    $('table tr').css('background','');
+                    $(this).css('background','<%=PropKit.use("config.properties").get("table_color")%>');
+                });
+            }
+        });
+        devtable.on('tool(test)', function(obj){
+            switch(obj.event){
+                case 'agree':
+                    //询问框
+                    layer.confirm('确定该商品通过审核？', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("goods/is_check")}?type=2&id='+obj.data.id,function(res){
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                window.location.reload();
+                            },800)
+                        },'json');
+                    }, function(){
+
+                    });
+                    break;
+            };
+        });
+    });
+    function hoverOpenImg(){
+        var img_show = null; // tips提示
+        $('td img').hover(function(){
+            //alert($(this).attr('src'));
+            var img = "<img class='img_msg' src='"+$(this).attr('src')+"' style='width:300px;' />";
+            img_show = layer.tips(img, this,{
+                tips:[2, 'rgba(41,41,41,.5)']
+                ,area: ['330px']
+            });
+        },function(){
+            layer.close(img_show);
+        });
+    }
+</script>
+
+
+

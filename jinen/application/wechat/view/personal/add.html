@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>相关信息</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/jquery-weui.js"></script>
+    <script>
+        $(function(){
+
+
+        });
+
+    </script>
+</head>
+
+<body ontouchstart  id="pdiv">
+    {empty name="means"}
+        <div class="page-hd" id="pdiv2">
+            <h1 class="page-hd-title">
+                暂无相关信息
+            </h1>
+        </div>
+    {/empty}
+    {switch $role.role}
+        {case 4}
+            {notempty name="means"}
+                <div class="weui-cells" id="pdiv1">
+                    <div class="page-hd">
+                        <h1 class="page-hd-title">
+                            当前地区可选择设备
+                        </h1>
+                    </div>
+                </div>
+            {/notempty}
+        {/case}
+    {/switch}
+    <div class="weui-loadmore" id="loading">
+        <i class="weui-loading"></i>
+        <span class="weui-loadmore__tips">正在加载</span>
+    </div>
+</body>
+{switch $role.role}
+    {case 1 }
+    <script>
+        var uid="{$role.uid}";
+        var page=1;//当前页
+        $(document).ready(getbalancelist());
+        //滚动加载
+        var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+        $(document.body).infinite().on("infinite", function() {
+            $("#loading").css("display","block");//显示 加载中图标
+            if(loading) return;
+            loading = true;
+            if(page<=countPage){
+                getbalancelist();
+            }else{
+                $(document.body).destroyInfinite();//到最后一页时，销毁它
+                $("#loading>i").css("display","none");
+                $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+            }
+        });
+        var countPage=1;//总页数
+        // //获取数据
+        function getbalancelist(){
+            $.post('{:url("personal/usersajax")}',{page:page,role:1,uid:uid},function(data)
+            {
+                console.log(data);
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                    //处理数据部分 .......
+                var str='';
+                for (var i = 0; i < data[1].length; i++) {
+                    str+="<div class=\"page-bd\">";
+                    str+="<div class=\"weui-cells\">";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备地址</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].aname+data[1][i].bname+data[1][i].cname+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备型号</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].version_name+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备安装时间</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].install_time+"</div>";
+                    str+="</div>";
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/jiance\")}?deviceid="+data[1][i].id+"&role=1>";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>监控详情</p>";
+                    str+="</div>"
+                    str+="<div class=\"weui-cell__ft\">";
+                    str+="</div>";
+                    str+="</a>";
+                    str+="</div>";
+                    str+="</div>";
+                }
+                $("#pdiv").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            },'json')
+            page++;
+        }
+    </script>
+    {/case}
+    {case 2 }
+<script>
+    var page=1;//当前页
+    $(document).ready(getbalancelist());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            getbalancelist();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function getbalancelist(){
+        $.post('{:url("personal/usersajax")}',{page:page,role:2},function(data)
+        {
+            //这里计算出总页数。。一般是后台给的
+            countPage=data.maxpage;
+            //处理数据部分 .......
+            var str='';
+            for (var i = 0; i < data[1].length; i++) {
+                str+="<div class=\"page-bd\">";
+                str+="<div class=\"weui-cells\">";
+                str+="<div class=\"weui-cell\">";
+                str+="<div class=\"weui-cell__bd\">";
+                str+="<p>客户</p>";
+                str+="</div>";
+                str+="<div class=\"weui-cell__ft\">"+data[1][i].cus_name+"</div>";
+                str+="</div>";
+                str+="<div class=\"weui-cell\">";
+                str+="<div class=\"weui-cell__bd\">";
+                str+="<p>手机号</p>";
+                str+="</div>";
+                str+="<div class=\"weui-cell__ft\">"+data[1][i].phone+"</div>";
+                str+="</div>";
+                str+="<div class=\"weui-cell\">";
+                str+="<div class=\"weui-cell__bd\">";
+                str+="<p>客户地址</p>";
+                str+="</div>";
+                str+="<div class=\"weui-cell__ft\">"+data[1][i].aname+data[1][i].bname+data[1][i].cname+"</div>";
+                str+="</div>";
+                str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/edit\")}?id="+data[1][i].id+"&role=2>";
+                str+="<div class=\"weui-cell__bd\">";
+                str+="<p>完善客户信息</p>";
+                str+="</div>"
+                str+="<div class=\"weui-cell__ft\">";
+                str+="</div>";
+                str+="</a>";
+                str+="</div>";
+                str+="</div>";
+            }
+            $("#pdiv").append(str);
+            loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+            $("#loading").css("display","none");//数据加载完隐藏加载提示
+        },'json')
+        page++;
+    }
+</script>
+    {/case}
+    {case 3 }
+    <script>
+        var page=1;//当前页
+        $(document).ready(getbalancelist());
+        //滚动加载
+        var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+        $(document.body).infinite().on("infinite", function() {
+            $("#loading").css("display","block");//显示 加载中图标
+            if(loading) return;
+            loading = true;
+            if(page<=countPage){
+                getbalancelist();
+            }else{
+                $(document.body).destroyInfinite();//到最后一页时，销毁它
+                $("#loading>i").css("display","none");
+                $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+            }
+        });
+        var countPage=1;//总页数
+        // //获取数据
+        function getbalancelist(){
+            $.post('{:url("personal/usersajax")}',{page:page,role:3},function(data)
+            {
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //处理数据部分 .......
+                var str='';
+                for (var i = 0; i < data[1].length; i++) {
+                    str+="<div class=\"page-bd\">";
+                    str+="<div class=\"weui-cells\">";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>客户</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].cus_name+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备地址</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].aname+data[1][i].bname+data[1][i].cname+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备型号</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].version_name+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备码</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].device_code+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备安装时间</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].install_time+"</div>";
+                    str+="</div>";
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/edit\")}?id="+data[1][i].id+"&role=3>";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>修改设备信息</p>";
+                    str+="</div>"
+                    str+="<div class=\"weui-cell__ft\">";
+                    str+="</div>";
+                    str+="</a>";
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/jiance\")}?deviceid="+data[1][i].id+"&version="+data[1][i].version+">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>监控详情</p>";
+                    str+="</div>"
+                    str+="<div class=\"weui-cell__ft\">";
+                    str+="</div>";
+                    str+="</a>";
+                    str+="</div>";
+                    str+="</div>";
+                }
+                $("#pdiv").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            },'json')
+            page++;
+        }
+    </script>
+    {/case}
+{case 4 }
+<script>
+    var page=1;//当前页
+    $(document).ready(getbalancelist());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            getbalancelist();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function getbalancelist(){
+        $.post('{:url("personal/usersajax")}',{page:page,role:4},function(data)
+        {
+            console.log(data);
+            if(data[1].length)
+            {
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //处理数据部分 .......
+                var str='';
+                for (var i = 0; i < data[1].length; i++) {
+                    var status=data[1][i].status==1?'开':'关';
+                    str+="<div class=\"page-bd\">";
+                    str+="<div class=\"weui-cells\">";
+                    str+="<div class=\"weui-cell\" style='background-color:#00F7DE'>";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p></p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\"></div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备地址</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].aname+data[1][i].bname+data[1][i].cname+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备型号</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].version_name+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>店铺地址</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].detail_address+data[1][i].shop_name+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备状态</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+status+"</div>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell\">";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>设备安装时间</p>";
+                    str+="</div>";
+                    str+="<div class=\"weui-cell__ft\">"+data[1][i].install_time+"</div>";
+                    str+="</div>";
+
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/jiance\")}?deviceid="+data[1][i].id+"&role=1>";
+                    str+="<div class=\"weui-cell__bd\">";
+                    str+="<p>监控详情</p>";
+                    str+="</div>"
+                    str+="<div class=\"weui-cell__ft\">";
+                    str+="</div>";
+                    str+="</a>";
+                    str+="</div>";
+                    str+="</div>";
+                }
+                $("#pdiv1").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+                {
+                    loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                    $("#loading").css("display","none");//数据加载完隐藏加载提示
+                }
+
+        },'json')
+        page++;
+    }
+</script>
+{/case}
+{/switch}
+</html>

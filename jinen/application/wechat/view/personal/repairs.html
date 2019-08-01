@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>申请报修</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/zepto.weui.js"></script>
+</head>
+
+<body ontouchstart class="page-bg">
+    <div class="page-hd">
+        <div class="weui-cells__title">故障说明</div>
+        <form action="" method="" id="form">
+            <div class="weui-cells weui-cells_form">
+                <div class="weui-cell">
+                    <div class="weui-cell__bd">
+                        <textarea class="weui-textarea" placeholder="请输入报修原因" rows="3" id="area" name="reason"></textarea>
+                        <div class="weui-textarea-counter"><span id="min">0</span>/<i id="max">80</i></div>
+                    </div>
+                    <i class="weui-icon-clear" onclick="cleararea()" id="clear"></i>
+                </div>
+            </div>
+            <div class="weui-cells">
+                <div class="weui-cell">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">联系电话</label>
+                    </div>
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" placeholder="请输入联系人手机号" type="tel" name="phone" id="phone" value="">
+                    </div>
+                </div>
+            </div>
+            <div style="height:2rem;display: flex;background-color:#F3F3F3;"></div>
+            <button type="button" value="" class="weui-btn weui-btn_primary" id="btn">提交</button>
+        </form>
+    </div>
+</body>
+<script type="text/javascript">
+    //清除
+    function cleararea(){
+        $("#clear").prev().find('.weui-textarea').val("");
+        $("#min").text("0");
+        $("#area").next().removeClass('f-red');
+        return false;
+    }
+    //onkeup
+    $(function(){
+        $(document).on("keyup","#area",function(){
+            var content = $("#area");
+            var max =  $("#max").text();
+            var value = content.val();
+            if (value.length>0) {
+                value = value.replace(/\n|\r/gi,"");
+                var len = value.length;
+                $("#min").text(len);
+                if(len>max){
+                    $.toptip("字数超限");
+                    $("#btn").attr("disabled","disabled");
+                    $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    content.next().addClass('f-red');
+                }else{
+                    content.next().removeClass('f-red');
+                    $("#btn").removeAttr("disabled");
+                    $("#btn").attr("class","weui-btn weui-btn_primary");
+                }
+            }
+        })
+    });
+    // 验证手机号正确
+    $(function(){
+        $(document).on("blur","#phone",function(){
+            var phone = $("#phone").val();
+            var myreg = /^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$/;
+            if(!myreg.test(phone))
+            {
+                $.toptip("请输入有效的手机号码！");
+                $("#btn").attr("disabled","disabled");
+                $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+        })
+    });
+    $(function(){
+        $(document).on("focus","#phone",function(){
+            $("#btn").removeAttr("disabled");
+            $("#btn").attr("class","weui-btn weui-btn_primary");
+        })
+    });
+    //提交按钮判断
+    $(function(){
+        $(document).on("click","#btn",function(){
+            var form_data=$("#form").serializeArray();
+            var datas={};
+            $.each(form_data,function(i,v){
+                datas[v.name] = v.value;
+             })
+            $.post('{:url("personal/repairsajax")}',{values:datas},function(data)
+            {
+                if(data.code==200){
+                    $.toptip(data.msg,'success');
+                    window.location.href='{:url("personal/myrepairs")}';
+                }else
+                {
+                    $.toptip(data.msg);
+                }
+            },'json');
+        })
+    });
+</script>
+</html>

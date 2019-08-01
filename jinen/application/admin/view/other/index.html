@@ -1,0 +1,223 @@
+{layout name="layout/layout" /}
+<div style="float:left;width: 50%;">
+    <div style="width: 100%;">
+        <h1 style="width: 100%;padding: 1rem;text-align: center">添加客户</h1>
+    </div>
+    <form class="layui-form layui-form1" action="" style="padding-top: 10px;padding-right: 15px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">客户姓名</label>
+            <div class="layui-input-block">
+                <input type="text" name="cus_name" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">电话</label>
+            <div class="layui-input-block">
+                <input type="text" name="phone" lay-verify="required|phone" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">客户店名</label>
+            <div class="layui-input-block">
+                <input type="text" name="shop_name" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">区域</label>
+            <div class="layui-input-inline">
+                <select name="province"  lay-filter="sheng" class="sheng" lay-verify="required">
+                    <option value="0">请选择省</option>
+                    {foreach $provinces as $val}
+                    <option value="{$val.id}">{$val.name}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="city" class="shi" lay-filter="shi" lay-verify="required">
+                    <option value="0">请选择市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="area" class="qu" lay-filter="qu" lay-verify="required">
+                    <option value="0">请选择县/区</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">详细地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="detail_address" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即添加</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div style="float: left;width: 50%;">
+    <div style="width: 100%;">
+        <h1 style="width: 100%;padding: 1rem;text-align: center">安装设备</h1>
+    </div>
+    <form class="layui-form layui-form1" action="" style="padding-top: 10px;padding-right: 15px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">设备编号</label>
+            <div class="layui-input-block">
+                <input type="text" name="device_code" lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">设备型号</label>
+            <div class="layui-input-block">
+                <select name="version"   class="sheng" lay-verify="required">
+                    <option value="0">请选择设备型号</option>
+                    {foreach $versions as $val}
+                    <option value="{$val.id}">{$val.version_name}</option>
+                    {/foreach}
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">区域</label>
+            <div class="layui-input-inline">
+                <select name="province"  lay-filter="sheng" class="sheng" lay-verify="required">
+                    <option value="0">请选择省</option>
+                    {foreach $provinces as $val1}
+                    <option value="{$val1.id}">{$val1.name}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="city" class="shi" lay-filter="shi" lay-verify="required">
+                    <option value="0">请选择市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="area" class="qu" lay-filter="qu" lay-verify="required">
+                    <option value="0">请选择县/区</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">选择客户</label>
+            <div class="layui-input-block">
+                <select name="customer_id" id="shang" lay-verify="required">
+                    <option value="0">请选择客户</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">安装人员</label>
+            <div class="layui-input-block">
+                <select name="installer" lay-verify="required">
+                    <option value="0">请选择安装人员</option>
+                    {foreach $installers as $installer}
+                    <option value="{$installer.id}">{$installer.cus_name}</option>
+                    {/foreach}
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" lay-submit="" lay-filter="demo2">立即添加</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    layui.use('form', function() {
+        var form = layui.form
+        //创建一个编辑器
+        form.on('submit(demo1)', function(data){
+            $.post('{:url("other/add_custom")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg('添加成功');
+                    return false;
+                }
+                layer.msg('添加失败！');
+            }, 'json')
+        });
+
+        form.on('submit(demo2)', function(data){
+            $.post('{:url("other/add_device")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            var shi = data.othis.parent().next().find('.shi');
+            var qu = data.othis.parent().next().next().find('.qu');
+            shi.html(oldshi);
+            qu.html(oldarea);
+            region(oldshi,shi,data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            var qu = data.othis.parent().next().find('.qu');
+            qu.html(oldarea);
+            region(oldarea,qu,data.value,form);
+        });
+
+        form.on('select(qu)', function(data){
+            var oldshang = '<option value="0">请选择商家</option>';
+            var obj = $('#shang')
+            $('#shang').html(oldshang);
+            var sheng = data.othis.parent().prev().prev().find('.sheng').val();
+            var shi = data.othis.parent().prev().find('.shi').val();
+            var qu = data.value;
+            $.ajax({
+                url: '{:url("customer/sellers")}',
+                type: 'post',
+                data: {"province": sheng, "city":shi, "area": qu},
+                dataType: 'json',
+                success: function(data){
+                    var option = '';
+                    $.each(data.data,function(i,v){
+                        option += `<option value='${v.id}'>${v.cus_name}</option>`;
+                    })
+                    obj.html(oldshang+option).change();
+                    form.render();
+                }
+            })
+
+        });
+    })
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+
+</script>
+

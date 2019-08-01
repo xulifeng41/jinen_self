@@ -1,0 +1,133 @@
+{include file='layout/header1' /}
+<link rel="stylesheet" href="../../static/css/zTreeStyle.css">
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">分组名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">父级</label>
+        <div class="layui-input-block">
+            <select name="parent_id" lay-filter="parent">
+                {foreach $groups as $val}
+                <option value="{$val[0]}">
+                {$val[1]}
+                </option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">权限</label>
+        <div class="layui-input-block">
+            <ul id="treeDemo" class="ztree"></ul>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">备注</label>
+        <div class="layui-input-block">
+            <input type="text" name="remark" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">登陆状态</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_prohibit" checked lay-skin="switch" lay-filter="switchTest"  lay-text="允许|禁止">
+        </div>
+        <div class="layui-form-mid layui-word-aux">禁用分组，分组下的管理员也会被禁止登陆！</div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即添加</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script src="../../static/js/jquery.ztree.all.min.js"></script>
+<script>
+
+    var setting = {
+        check: {
+            enable: true
+        },
+        data: {
+            simpleData: {
+                enable: true
+            }
+        },
+        type:{
+            "Y":'ps',
+            "N": 'ps'
+        },
+        async:{
+            enable: true,
+            type:'get',
+            dataType: 'json',
+            otherParam: {parent_id : 0}
+        },
+        callback:{
+            beforeAsync: function(){
+                setting.async.otherParam.parent_id = 1;
+            }
+        }
+    };
+
+    layui.use('form', function(){
+        var form = layui.form;
+
+        form.on('select(parent)', function(data){
+            var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
+            treeObj.setting.async.otherParam.parent_id = data.value;
+            treeObj.reAsyncChildNodes(null, "refresh");
+            return false;
+        });
+
+        form.on('submit(demo1)', function(data){
+            var params = data.field;
+            var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
+            var nodes = treeObj.getCheckedNodes(true);
+            var node1 = nodes.map(function (value) {
+                return value.id;
+            });
+            node1 = node1.join('-');
+            params.auths = node1;
+            $.post('{:url("permission/add_group")}', params, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+    });
+
+    $.get('{:url("permission/add_group")}?',function(res){
+        if (res.code){
+            var zNodes = res.data.map(function(value,index,array){
+                var xin = {};
+                xin.id = value.id;
+                xin.pId = value.parent_id;
+                xin.name = value.title;
+                xin.open = true;
+                return xin;
+            })
+            $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+        }
+    },'json')
+
+    // var treeObj = $.fn.zTree.getZTreeObj("treeDemo");
+    // var nodes = treeObj.getCheckedNodes(true);
+    // console.log(nodes);
+</script>
+
+{include file='layout/footer1' /}

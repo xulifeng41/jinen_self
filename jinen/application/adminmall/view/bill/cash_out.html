@@ -1,0 +1,87 @@
+{include file='layout/header1'}
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">提现金额</label>
+        <div class="layui-input-inline">
+            <input type="text" name="cash" lay-verify="cash" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">提现账号</label>
+        <div class="layui-input-inline">
+            <input type="text" name="account" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">提现人姓名</label>
+        <div class="layui-input-inline">
+            <input type="text" name="account_name" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">提现账号开户行</label>
+        <div class="layui-input-inline">
+            <input type="text" name="account_bank" lay-verify="required" autocomplete="off" class="layui-input" value="">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn tijiao" lay-submit="" lay-filter="demo1">立即申请</button>
+        </div>
+    </div>
+</form>
+
+<script src="/static/layui/layui/layui.js"></script>
+<script>
+    layui.use('form', function() {
+        var form = layui.form;
+        form.verify({
+            cash: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(!value)
+                {
+                    return '请填写提现金额';
+                }
+                if(!dcash(value).codes)
+                {
+                    return '提现金额与账户余额不符';
+                }
+            }
+        });
+        form.on('submit(demo1)', function(data){
+            $.post('{:url("bill/cash_out")}', data.field, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+
+    })
+
+    function dcash(value)
+    {
+        var data={};
+        $.ajaxSettings.async = false;
+        $.post('{:url("bill/cash_check")}', {cash:value}, function (res) {
+            if(res.code==200)
+            {
+                data.codes=true;
+            }else
+            {
+                data.codes=false;
+            }
+            data.msg=res.msg;
+        },'json');
+        return data;
+    }
+</script>
+
+{include file='layout/footer1' /}

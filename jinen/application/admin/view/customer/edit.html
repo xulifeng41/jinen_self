@@ -1,0 +1,168 @@
+{include file='layout/header1' /}
+
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">客户姓名</label>
+        <div class="layui-input-block">
+            <input type="text" name="cus_name" lay-verify="required" autocomplete="off" class="layui-input" value="{$cuser.cus_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">客户店名</label>
+        <div class="layui-input-block">
+            <input type="text" name="shop_name" lay-verify="required" autocomplete="off" class="layui-input" value="{$cuser.shop_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">地域</label>
+        <div class="layui-input-block">
+            <select name="province"  lay-filter="sheng" id="sheng" >
+            <option value="0">请选择省</option>
+            {foreach $provinces as $val}
+            <option value="{$val.id}" {eq name="$cuser.province" value="$val.id"} selected {/eq}>{$val.name}</option>
+            {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="city" id="shi" lay-filter="shi" >
+            <option value="0">请选择市</option>
+            {foreach $cities as $city}
+            <option value="{$city.id}" >{$city.name}</option>
+            {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="area" id="qu" lay-filter="qu" {if (ADROLE==2&&LEVEL>2)||ADROLE==3}disabled{/if}>
+            <option value="0">请选择县/区</option>
+            {foreach $areas as $area}
+            <option value="{$area.id}" >{$area.name}</option>
+            {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">详细地址</label>
+        <div class="layui-input-block">
+            <input type="text" name="detail_address" lay-verify="required" autocomplete="off" class="layui-input" value="{$cuser.detail_address}">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">注册时间</label>
+        <div class="layui-input-block">
+            <input type="text" autocomplete="off" class="layui-input" value="{$cuser.create_time}"  readonly>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">业务员</label>
+        <div class="layui-input-block">
+            <input type="text" autocomplete="off" class="layui-input" value="{$cuser.saleman}"  readonly>
+
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">客户角色</label>
+        <div class="layui-input-block">
+            <select name="role">
+                <option value="1" {eq name="$cuser.role" value="1"}selected{/eq}>普通用户</option>
+                <option value="2" {eq name="$cuser.role" value="2"}selected{/eq}>销售人员</option>
+                <option value="3" {eq name="$cuser.role" value="3"}selected{/eq}>安装人员</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即修改</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+    var device_id = "{$cuser.id}";
+    layui.use('form', function(){
+        var form = layui.form;
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#shi').html(oldshi);
+            $('#qu').html(oldarea);
+            region(oldshi,$('#shi'),data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#qu').html(oldarea);
+            region(oldarea,$('#qu'),data.value,form);
+        });
+
+        form.on('select(qu)', function(data){
+            var oldshang = '<option value="0">请选择商家</option>';
+            var obj = $('#shang')
+            $('#shang').html(oldshang);
+            var sheng = $('#sheng').val();
+            var shi = $('#shi').val();
+            var qu = data.value;
+            $.ajax({
+                url: '{:url("customer/sellers")}',
+                type: 'post',
+                data: {"province": sheng, "city":shi, "area": qu},
+                dataType: 'json',
+                success: function(data){
+                    var option = '';
+                    $.each(data.data,function(i,v){
+                        option += `<option value='${v.id}'>${v.cus_name}</option>`;
+                    })
+                    obj.html(oldshang+option).change();
+                    form.render();
+                }
+            })
+
+        });
+
+    });
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+
+    $('.layui-btn').click(function(){
+        var allforms = $('.layui-form').serializeArray();
+        var data = {};
+        $.each(allforms,function(i,v){
+            data[v.name] = v.value;
+        })
+        data.id = device_id;
+        $.ajax({
+            url: '{:url("customer/edit")}',
+            type: 'post',
+            data: data,
+            dataType: 'json',
+            success: function(data){
+                if(data.code==200){
+                    layer.msg(data.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800);
+                }
+            }
+        })
+    })
+</script>
+
+{include file='layout/footer1' /}

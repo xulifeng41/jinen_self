@@ -1,0 +1,214 @@
+{include file='layout/header1' /}
+<link rel="stylesheet" href="../../static/css/zTreeStyle.css">
+<form class="layui-form" action="" style="padding-top: 10px;padding-right: 15px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">登陆名</label>
+        <div class="layui-input-block">
+            <input type="text" name="user_name" lay-verify="required|username" autocomplete="off" class="layui-input" value="{$manager.user_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">真实姓名</label>
+        <div class="layui-input-block">
+            <input type="text" name="real_name" autocomplete="off" class="layui-input" value="{$manager.real_name}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">电话</label>
+        <div class="layui-input-block">
+            <input type="text" name="phone" lay-verify="phone" autocomplete="off" class="layui-input" value="{$manager.phone}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">权限分组</label>
+        <div class="layui-input-block">
+            <select name="auth_group" lay-verify="required">
+                {foreach $groups as $val}
+                <option value="{$val[0]}" {eq name="$manager.auth_group" value="$val[0]"}selected{/eq}>
+                    {$val[1]}
+                </option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色</label>
+        <div class="layui-input-block">
+            <select name="role" lay-verify="required" id="role">
+                {eq name="ADROLE" value="1"}
+                <option value="0">请为管理员指定角色</option>
+                <option value="1" {eq name="$manager.role" value="1"}selected{/eq}>平台人员</option>
+                {/eq}
+                {if (ADROLE==2) or (ADROLE==1)}
+                <option value="2" {eq name="$manager.role" value="2"}selected{/eq}>代理商</option>
+                {/if}
+                {if (ADROLE==3) or (ADROLE==1)}
+                <option value="3" {eq name="$manager.role" value="3"}selected{/eq}>环保人员</option>
+                {/if}
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">级别</label>
+        <div class="layui-input-block">
+            <select name="level" lay-verify="level" id="level">
+                {eq name="ADROLE" value="1"}
+                <option value="0">请为管理员指定级别</option>
+                <option value="1" {eq name="$manager.level" value="1"}selected{/eq}>省级管理员</option>
+                <option value="2" {eq name="$manager.level" value="2"}selected{/eq}>市级管理员</option>
+                {/eq}
+                {if (ADROLE!=1&&LEVEL==1)}
+                <option value="0">请为管理员指定级别</option>
+                <option value="2" {eq name="$manager.level" value="2"}selected{/eq}>市级管理员</option>
+                {/if}
+                <option value="3" {eq name="$manager.level" value="3"}selected{/eq}>县级管理员</option>
+            </select>
+            <div class="layui-form-mid layui-word-aux">平台人员不需要指定级别，其他角色必须指定</div>
+        </div>
+
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">区域</label>
+        <div class="layui-input-block">
+            <select name="province"  lay-filter="sheng" id="sheng" lay-verify="quyu1">
+                <option value="0">请选择省</option>
+                {foreach $provinces as $val}
+                <option value="{$val.id}" {eq name="$manager.province" value="$val.id"}selected{/eq}>{$val.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="city" id="shi" lay-filter="shi" lay-verify="quyu2">
+                <option value="0">请选择市</option>
+                {foreach $cities as $city}
+                <option value="{$city.id}" {eq name="$manager.city" value="$city.id"}selected{/eq}>{$city.name}</option>
+                {/foreach}
+            </select>
+        </div>
+        <div class="layui-input-block">
+            <select name="area" id="qu" lay-filter="qu" lay-verify="quyu3">
+                <option value="0">请选择县/区</option>
+                {foreach $areas as $area}
+                <option value="{$area.id}" {eq name="$manager.area" value="$area.id"}selected{/eq}>{$area.name}</option>
+                {/foreach}
+            </select>
+            <div class="layui-form-mid layui-word-aux">平台人员不需要指定区域，其他角色必须指定</div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">登陆状态</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_delete" lay-skin="switch" lay-filter="switchTest"  lay-text="允许|禁止" {eq name="$manager.is_delete" value="允许登陆"} checked {/eq}>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="demo1">立即添加</button>
+        </div>
+    </div>
+</form>
+<script src="../../static/layui/layui/layui.js"></script>
+<script>
+    var id = '{$manager.id}';
+    layui.use('form', function(){
+        var form = layui.form;
+        //验证
+        form.verify({
+            username: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(!/^[a-zA-Z0-9]{6,12}$/.test(value)){
+                    return '请输入6~12位的数字或密码登录名'
+                }
+            },
+            level:function(value,item){
+                var role = $('#role').val();
+                if(role > 1){
+                    if(value==0){
+                        return '请为管理员指定级别';
+                    }
+                }
+            },
+            quyu1:function(value){
+                var role = $('#role').val();
+                if(role > 1){
+                    if(value==0){
+                        return '请为管理员指定区域';
+                    }
+                }
+            },
+            quyu2:function (value) {
+                var role = $('#role').val();
+                var level = $('#level').val();
+                if (role>1&&level>1){
+                    if(value==0){
+                        return '请为管理员指定区域';
+                    }
+                }
+            },
+            quyu3:function (value) {
+                var role = $('#role').val();
+                var level = $('#level').val();
+                if (role>1&&level>2){
+                    if(value==0){
+                        return '请为管理员指定区域';
+                    }
+                }
+            }
+        });
+        form.on('submit(demo1)', function(data){
+            var params = data.field;
+            params.id = id;
+            $.post('{:url("manager/edit")}', params, function (res) {
+                if (res.code == 200) {
+                    layer.msg(res.msg);
+                    setTimeout(function(){
+                        window.parent.location.reload();
+                    },800)
+                    return false;
+                }
+                layer.msg(res.msg);
+            }, 'json')
+        });
+
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#shi').html(oldshi);
+            $('#qu').html(oldarea);
+            region(oldshi,$('#shi'),data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#qu').html(oldarea);
+            region(oldarea,$('#qu'),data.value,form);
+        });
+
+    });
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+</script>
+
+{include file='layout/footer1' /}

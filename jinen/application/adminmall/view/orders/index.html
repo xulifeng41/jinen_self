@@ -1,0 +1,186 @@
+
+{layout name="layout/layout" /}
+<div class="demoTable" style="padding: 0.5rem 0.8rem;">
+
+<form class="layui-form layui-form-pane layui-inline" action=""  id="gaoji">
+    <div class="layui-form-item" style="margin-bottom: 0;">
+        <label class="layui-form-label">订单状态</label>
+        <div class="layui-input-inline">
+            <select name="order_status"  lay-filter="sheng" id="status">
+                <option value="7">全部订单</option>
+                <option value="2" selected>已支付成功,等待发货</option>
+                <option value="1">下单成功</option>
+                <option value="3">已取消订单</option>
+                <option value="4">已发货</option>
+                <option value="5">已签收</option>
+                <option value="6">以评论</option>
+            </select>
+        </div>
+    </div>
+</form>
+    <button class="layui-btn" data-type="gaoji">搜索</button>
+
+    <button class="layui-btn layui-btn-normal" id="export">
+        导出以下数据
+    </button>
+</div>
+<table id="demo" lay-filter="test"></table>
+
+
+<script type="text/html" id="barDemo" class="tudoTpl">
+    <a class="layui-btn layui-btn-xs" lay-event="info">订单详情</a>
+    {{# if (d.order_status=='2') { }}  
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="send">发货</a>
+    {{# } else if(d.order_status=='3') { }}  
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="return">查看原因</a>
+    {{# } else if(d.order_status=='4') { }}  
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delivery">查看信息</a>
+    {{# } else if(d.order_status=='5') { }}  
+    <a class="layui-btn layui-btn-primary layui-btn-xs">待评论</a>
+    {{# } else if(d.order_status=='6') { }}  
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="comment">查看评价</a>
+    {{# } else { }}  
+    <a class="layui-btn layui-btn-primary layui-btn-xs">无信息</a>
+    {{# } }}  
+</script>
+<script type="text/html" id="switch1">
+    {{# if (d.order_status=='2') { }}  
+    支付成功，等待发货
+    {{# } else if(d.order_status=='3') { }}  
+    取消订单
+    {{# } else if(d.order_status=='4') { }}  
+    已发货
+    {{# } else if(d.order_status=='5') { }}  
+    已签收
+    {{# } else if(d.order_status=='6') { }}  
+    已评论
+    {{# } else { }}  
+    初始状态
+    {{# } }}  
+</script>
+<script type="text/html" id="switch2">
+    {foreach $add as $address}
+    {{#  if(d.rec_address == {$address.id}){ }}
+    {$address.aname}{$address.bname}{$address.cname}{$address.detail_address}
+    {{#  } }}
+    {/foreach}
+</script>
+<script>
+    layui.use(['table','form'], function(){
+        var devtable = layui.table,form = layui.form;
+        var layer = layui.layer;         //弹层
+        var $ = layui.jquery;
+        var exportData = " ";			//定义全局变量
+        var ins1=devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("orders/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar: false
+            ,title: '订单列表'
+            ,cols: [[ //表头
+                        {field:'id',title:'序号',width:40,type:'numbers'}
+                        ,{field: 'customer_name', title: '下单客户',width:100}
+                        ,{field: 'order_price', title: '订单总价',width:100}
+                        ,{field: 'actual_price', title: '实际付款',width:100}
+                        ,{field: 'rec_address', title: '收货地址',templet: '#switch2'}
+                        ,{field: 'order_status', title: '订单状态',templet: '#switch1'}
+                        ,{field: 'create_time', title: '下单时间',width:200}
+                        ,{fixed: 'right', title:'操作', toolbar: '#barDemo',templet:'.tudoTpl',width:200}
+                    ]]
+            ,done: function (res, curr, count) {
+                exportData=res.data; 		//获取表格中的数据集合。
+            }
+        });
+
+        $("#export").click(function(){
+            devtable.exportFile(ins1.config.id,exportData, 'xls');
+        })
+
+        var $ = layui.$, active = {
+            gaoji: function(){
+                var status = $('#status').val();
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        status: status
+                    }
+                });
+            }
+        };
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        devtable.on('tool(test)', function(obj){
+            switch(obj.event){
+                case 'info':
+                    $.post('{:url("orders/edit_orders")}?type=info&id='+obj.data.id,function(res){
+                        if(res.code==200)
+                        {
+                            window.location.href='{:url("orders/info_orders")}?id='+obj.data.id
+                        }else
+                        {
+                            layer.msg(res.msg);
+                        }
+                    },'json');
+                    break;
+                case 'return':
+                    layer.open({
+                        type: 2,
+                        title: '订单取消详情',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '80vh'],
+                        content: '{:url("orders/edit_orders")}?type=return&id='+obj.data.id
+                    });
+                    break;
+                case 'delivery':
+                    layer.open({
+                        type: 2,
+                        title: '配送信息',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '80vh'],
+                        content: '{:url("orders/edit_orders")}?type=delivery&id='+obj.data.id
+                    });
+                    break;
+                case 'comment':
+                    layer.open({
+                        type: 2,
+                        title: '配送信息',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '80vh'],
+                        content: '{:url("orders/edit_orders")}?type=comment&id='+obj.data.id
+                    });
+                    break;
+                case 'send':
+                    //询问框
+                    layer.confirm('请尽快将商品寄出', {
+                        btn: ['确定','取消'] //按钮
+                    }, function(){
+                        $.get('{:url("orders/edit_orders")}?type=send&id='+obj.data.id,function(res){
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                window.location.reload();
+                            },800)
+                        },'json');
+                    }, function(){
+
+                    });
+                    break;
+            };
+        });
+    });
+</script>
+
+
+

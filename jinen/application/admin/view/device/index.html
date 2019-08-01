@@ -1,0 +1,244 @@
+{layout name="layout/layout" /}
+
+<div class="demoTable" style="padding: 0.5rem 0.8rem;">
+
+    <form class="layui-form layui-form-pane layui-inline" action="">
+        <div class="layui-form-item" style="margin-bottom: 0;">
+            <label class="layui-form-label">地区选择</label>
+            <div class="layui-input-inline">
+                <select name="quiz1"  lay-filter="sheng" id="sheng">
+                    <option value="0">请选择省</option>
+                    {foreach $provinces as $val}
+                    <option value="{$val.id}">{$val.name}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="quiz2" id="shi" lay-filter="shi">
+                    <option value="0">请选择市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="quiz3" id="qu" lay-filter="qu">
+                    <option value="0">请选择县/区</option>
+                </select>
+            </div>
+            <label class="layui-form-label">商家选择</label>
+            <div class="layui-input-inline">
+                <select name="quiz1" lay-filter="shang" id="shang">
+                    <option value="0">请选择商家</option>
+                </select>
+            </div>
+        </div>
+    </form>
+    <button class="layui-btn" data-type="reload">搜索</button>
+    <button class="layui-btn" data-type="gaoji">高级搜索</button>
+
+    <form class="layui-form layui-form-pane layui-inline" action="" style="display: none" id="gaoji">
+        <div class="layui-form-item" style="margin-bottom: 0;">
+            <label class="layui-form-label">运行状态</label>
+            <div class="layui-input-inline">
+                <select name="quiz1"  lay-filter="sheng" id="status">
+                    <option value="0">请选择</option>
+                    <option value="1">运行中</option>
+                    <option value="2">关机</option>
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table id="demo" lay-filter="test"></table>
+
+<script type="text/html" id="switchTpl">
+    <input type="checkbox" name="env_show" value="{{d.id}}" lay-skin="switch" lay-text="显示|隐藏" lay-filter="env" {{ d.env_show ? 'checked' : '' }}>
+</script>
+
+<script type="text/html" id="barDemo">
+    <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
+    <button class="layui-btn layui-btn-xs" lay-event="datas">实时监控</button>
+</script>
+
+<script>
+    {neq name='ADROLE' value='3'}
+    var cols = [
+        {field: 'id', title: 'ID',width:50}
+        ,{field: 'device_code', title: '设备编号'}
+        ,{field: 'version_name', title: '型号'}
+        ,{field: 'cus_name', title: '客户'}
+        ,{field: 'status', title: '运行状态'}
+        ,{field: 'install_time', title: '安装时间'}
+        ,{field: 'total_time', title: '工作总时间'}
+        ,{field:'env_show', title:'环保人员', templet: '#switchTpl', unresize: true}
+        ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+    ]
+    {else /}
+        var cols = [
+            {field: 'id', title: 'ID',width:50}
+            ,{field: 'device_code', title: '设备编号'}
+            ,{field: 'version_name', title: '型号'}
+            ,{field: 'cus_name', title: '客户'}
+            ,{field: 'status', title: '运行状态'}
+            ,{field: 'install_time', title: '安装时间'}
+            ,{field: 'total_time', title: '工作总时间'}
+            ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+        ]
+        {/neq}
+
+    layui.use(['table','form'], function(){
+        var devtable = layui.table,form = layui.form;
+        devtable.render({
+            elem: '#demo'
+            ,id: 'shebeis'
+            ,url: '{:url("device/index")}' //数据接口
+            ,page: true //开启分页
+            ,toolbar: false
+            ,title: '设备列表'
+            ,cols: [cols]
+        });
+
+        //监听性别操作
+        form.on('switch(env)', function(obj){
+            var env_show = 1;
+            var id = this.value;
+            if (!obj.elem.checked){
+                env_show = 0;
+            }
+            $.ajax({
+                url:"{:url('device/env_show')}",
+                type: 'post',
+                dataType: 'json',
+                data: {env_show: env_show,id:id},
+                success: function(res){
+                    layer.msg(res.msg);
+                }
+            })
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var sheng = $('#sheng').val();
+                var shi = $('#shi').val();
+                var qu = $('#qu').val();
+                var shang = $('#shang').val();
+                var status = $('#status').val();
+                console.log(status);
+                //执行重载
+                devtable.reload('shebeis', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    },
+                    where: {
+                        province: sheng,
+                        city: shi,
+                        area: qu,
+                        customer_id: shang,
+                        status: status
+                    }
+                });
+            },
+            gaoji: function () {
+                $('#gaoji').toggle();
+            }
+
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //监听事件
+        devtable.on('tool(test)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'edit':
+                    layer.open({
+                        type: 2,
+                        title: '设备详情',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['30vw', '70vh'],
+                        content: '{:url("device/edit")}?id='+data.id
+                    });
+                    break;
+                case 'datas':
+                    layer.open({
+                        type: 2,
+                        title: '设备监控详情',
+                        shadeClose: true,
+                        shade: false,
+                        skin: 'layui-layer-molv',
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['calc(100% - 200px)','100%'],
+                        offset:['60px','200px'],
+                        content: '{:url("device/monitor_datas")}?id='+data.id
+                    });
+                    // layer.full(index);
+                    break;
+            };
+        });
+
+    });
+
+    layui.use('form', function(){
+        var form = layui.form;
+        form.on('select(sheng)', function(data){
+            var oldshi = '<option value="">请选择市</option>';
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#shi').html(oldshi);
+            $('#qu').html(oldarea);
+            region(oldshi,$('#shi'),data.value,form);
+        });
+
+        form.on('select(shi)', function(data){
+            var oldarea = '<option value="">请选择县/区</option>';
+            $('#qu').html(oldarea);
+            region(oldarea,$('#qu'),data.value,form);
+        });
+
+        form.on('select(qu)', function(data){
+            var oldshang = '<option value="0">请选择商家</option>';
+            var obj = $('#shang')
+            $('#shang').html(oldshang);
+            var sheng = $('#sheng').val();
+            var shi = $('#shi').val();
+            var qu = data.value;
+            $.ajax({
+                url: '{:url("customer/sellers")}',
+                type: 'post',
+                data: {"province": sheng, "city":shi, "area": qu},
+                dataType: 'json',
+                success: function(data){
+                    var option = '';
+                    $.each(data.data,function(i,v){
+                        option += `<option value='${v.id}'>${v.cus_name}</option>`;
+                    })
+                    obj.html(oldshang+option).change();
+                    form.render();
+                }
+            })
+
+        });
+
+    });
+
+    function region(old,obj,parent_id,form){
+        $.ajax({
+            url: '{:url("device/region")}',
+            type: 'post',
+            data: {"parent_id" : parent_id},
+            dataType: 'json',
+            success: function(data){
+                var option = '';
+                $.each(data,function(i,v){
+                    option += `<option value='${v.id}'>${v.name}</option>`;
+                })
+                obj.html(old+option).change();
+                form.render();
+            }
+        })
+    }
+</script>
