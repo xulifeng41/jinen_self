@@ -100,11 +100,11 @@
                 countdown =60;
                 return;
             }else
-                {
-                    code.text("重新发送(" + countdown + ")");
-                    code.attr('disabled',true);
-                    countdown--;
-                }
+            {
+                code.text("重新发送(" + countdown + ")");
+                code.attr('disabled',true);
+                countdown--;
+            }
         }else if(countdown == 55)
         {
             code.text("重新发送(" + countdown + ")");
@@ -197,7 +197,7 @@
                 if(data.code==200){
                     $.toptip("提交成功",'success');
                     setTimeout(function () {
-                        window.location.href = '{url("wechat/index")}';
+                        window.location.href = '{:url("index")}';
                     },800)
                 }else
                 {

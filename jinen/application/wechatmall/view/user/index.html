@@ -1,0 +1,201 @@
+{include file='layout/head' /}
+<style>
+
+    .weui-flex {
+        padding: 0 15px;
+        background-color: #ebebeb;
+        height: 2.3em;
+        line-height: 2.3em;
+        font-size: 14px;
+    }
+
+</style>
+</head>
+<body ontouchstart class="page-bg" style="padding: 0 3px 3px 3px">
+<div class="page-bd">
+    <div class="weui-panel weui-panel_access">
+        <div class="weui-panel__bd" style="background-color: #00F7DE">
+            <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                <div class="weui-media-box__hd" style="">
+                    <img class="weui-media-box__thumb" src="{$info.headimgurl}" alt="" style="border-radius: 10%;">
+                </div>
+                <div class="weui-media-box__bd">
+                    <h4 class="weui-media-box__title">昵称:{$info.nickname}</h4>
+                    <p class="weui-media-box__desc">关注时间:{$info.subscribe_time}</p>
+                    <p class="weui-media-box__desc">系统时间:{$info.time}</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="weui-flex">
+        <div class="weui-flex__item">总销售额:{$info.sales_all}</div>
+        <div class="weui-flex__item">总佣金:{$info.balance_all}</div>
+    </div>
+    <div class="weui-flex">
+        <div class="weui-flex__item">本月佣金:{$info.balance_month}</div>
+        <div class="weui-flex__item">可提现:{$info.balance}</div>
+    </div>
+    <ul class="collapse" style="margin-top: 10px;">
+        <li>
+            <div class="weui-flex js-category" style="height: 1.6em;">
+                <div class="weui-flex__item">
+                    <div class="weui-panel">
+                        <div class="weui-panel__bd">
+                            <div class="weui-media-box weui-media-box_small-appmsg">
+                                <div class="weui-cells">
+                                    <a class="weui-cell weui-cell_access" href="javascript:;" style="padding:10px 0; background-color: #ebebeb">
+                                        <i class="icon icon-99 f20"></i>
+                                        <div class="weui-cell__bd weui-cell_primary">
+                                            <p>我的客户</p>
+                                        </div>
+                                        <span class="weui-cell__ft"></span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-category js-categoryInner">
+                <div class="weui-cells page-category-content">
+                    <p class="content">
+                        <div class="weui-flex" style="font-size: 14px">
+                            <div class="weui-flex__item">
+                                <div >人数:{$num.all}</div>
+                            </div>
+                            <div class="weui-flex__item">
+                                <div >已购买:{$num.buy_num}</div>
+                            </div>
+                            <div class="weui-flex__item">
+                                <div >未购买:{$num.nobuy_num}</div>
+                            </div>
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </li>
+    </ul>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url('order/index')} style="padding:10px; background-color: #ebebeb">
+                        <i class="icon icon-81 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>订单明细</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url('user/performance')} style="padding:10px; background-color: #ebebeb">
+                        <i class="icon icon-64 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>业绩查询</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url('user/cash_info')} style="padding:10px; background-color: #ebebeb">
+                        <i class="icon icon-62 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>提现记录</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url("cash/index")} style="padding:10px; background-color: #ebebeb">
+                        <i class="icon icon-2 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>申请提现</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url("cash/add_bank")} style="padding:10px; background-color: #ebebeb">
+                        <i class="icon icon-93 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>银行卡管理</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href={:url("user/address_list")} style="padding:10px; background-color: #ebebeb">
+                        <i class="icon icon-83 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>收货地址</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="weui-panel">
+        <div class="weui-panel__bd">
+            <div class="weui-media-box weui-media-box_small-appmsg">
+                <div class="weui-cells">
+                    <a class="weui-cell weui-cell_access" href="javascript:void(0);" style="padding:10px; ">
+                        <i class="icon icon-83 f20"></i>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p></p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function(){
+        $('.collapse .js-category').click(function(){
+            $parent = $(this).parent('li');
+            if($parent.hasClass('js-show')){
+                $parent.removeClass('js-show');
+                $(this).children('i').removeClass('icon-35').addClass('icon-74');
+            }else{
+                $parent.siblings().removeClass('js-show');
+                $parent.addClass('js-show');
+                $(this).children('i').removeClass('icon-74').addClass('icon-35');
+                $parent.siblings().find('i').removeClass('icon-35').addClass('icon-74');
+            }
+        });
+
+    });
+</script>
+{include file='layout/footer1' /}

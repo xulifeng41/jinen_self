@@ -1,0 +1,25 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart class="page-bg" style="padding: 0 3px 3px 3px">
+    <div class="page-bd-15">
+        <div class="weui-feeds">
+            <ul>
+                <li>
+                    <span style="background-repeat:no-repeat;background-size:cover;" id="span1"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+<script>
+    var code_url="{$code}";
+    var sp = document.getElementById('span1');
+    if(code_url)
+    {
+        sp.style.backgroundImage="url("+code_url+")";
+    }else
+        {
+            $(".weui-feeds").html('该用户暂无此功能');
+        }
+</script>
+</html>

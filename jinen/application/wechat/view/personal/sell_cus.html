@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>相关信息</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/jquery-weui.js"></script>
+    <script>
+        $(function(){
+
+
+        });
+
+    </script>
+</head>
+
+<body ontouchstart  id="pdiv">
+
+<div class="weui-search-bar" id="searchBar">
+    <form class="weui-search-bar__form" method="post" id="subform">
+        <div class="weui-search-bar__box">
+            <i class="weui-icon-search"></i>
+            <input class="weui-search-bar__input" id="searchInput" placeholder="搜索" required="" type="search" name="searchv">
+            <a href="javascript:" class="weui-icon-clear" id="searchClear"></a>
+        </div>
+        <label class="weui-search-bar__label" id="searchText" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
+            <i class="weui-icon-search"></i>
+            <span>根据手机号搜索</span>
+        </label>
+    </form>
+    <a href="javascript:" class="weui-search-bar__cancel-btn" id="searchCancel">取消</a>
+</div>
+<div class="weui-cells" id="pdiv3">
+    <h1 class="page-hd-title">
+        可选择用户
+    </h1>
+</div>
+<div class="weui-cells" id="pdiv4">
+</div>
+</body>
+<script>
+    var phone=$("#searchInput").val();
+    $(document).ready(page_data(phone,false));
+    function page_data(phone,is_serach)
+    {
+        $.post('{:url("personal/selectuser")}',{type:1,phone:phone},function(data)
+        {
+            console.log(data);
+            if(data.length)
+            {
+                var str='';
+                //处理数据部分 .......
+                for (var i = 0; i < data.length; i++) {
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/sellbind\")}?id="+data[i].id+">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>"+data[i].cus_name+"</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                }
+                if(phone.length)
+                {
+                    if(is_serach)
+                    {
+                        $("#pdiv4").html('');
+                    }
+                    $("#pdiv3").html('');
+
+                    $("#pdiv4").append(str);
+                }else
+                {
+                    $("#pdiv3").append(str);
+                    loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                    $("#loading").css("display","none");//数据加载完隐藏加载提示
+                }
+            }else
+            {
+                str="<div class=\"page-hd\">";
+                str+="<h1 class=\"page-hd-title\">无用户</h1></div>";
+                $("#pdiv3").html(str);
+                $("#pdiv4").html('');
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }
+
+
+        },'json')
+    }
+    //搜索
+    $(function(){
+        $(document).on("submit","#subform",function(){
+            var get_phone=$("#searchInput").val();
+            var is_serach=true;
+            page_data(get_phone,is_serach);
+            return false;
+        })
+    });
+    var page=2;//当前页
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            var the_phone=$("#searchInput").val();
+            getbalancelist(the_phone,false);
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=2;//总页数
+    //获取数据
+    function getbalancelist(phone,is_serach){
+        $.post('{:url("personal/selectuser")}',{page:page,phone:phone},function(data)
+        {
+            console.log(data);
+            if(data[1].length)
+            {
+                var str='';
+                //处理数据部分 .......
+                for (var i = 0; i < data[1].length; i++) {
+                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/sellbind\")}?id="+data[1][i].id+">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>"+data[1][i].cus_name+"</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                }
+                if(phone.length)
+                {
+                    if(is_serach)
+                    {
+                        $("#pdiv4").html('');
+                    }
+                    $("#pdiv3").html('');
+
+                    $("#pdiv4").append(str);
+                }else
+                {
+                    //这里计算出总页数。。一般是后台给的
+                    countPage=data.maxpage;
+
+                    $("#pdiv3").append(str);
+                    loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                    $("#loading").css("display","none");//数据加载完隐藏加载提示
+                }
+            }else
+            {
+                str="<div class=\"page-hd\">";
+                str+="<h1 class=\"page-hd-title\">无用户</h1></div>";
+                $("#pdiv3").html(str);
+                $("#pdiv4").html('');
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }
+
+        },'json')
+        page++;
+    }
+</script>
+</html>

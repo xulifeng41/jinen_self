@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>相关信息</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="stylesheet" href="/static/css/weui/weui.css"/>
+    <link rel="stylesheet" href="/static/css/weui/weuix.css"/>
+    <script src="/static/js/weui/zepto.min.js"></script>
+    <script src="/static/js/weui/jquery-weui.js"></script>
+    <script>
+        $(function(){
+
+
+        });
+
+    </script>
+</head>
+
+<body ontouchstart  id="pdiv">
+<div class="weui-cells" id="pdiv1"></div>
+
+<div class="weui-loadmore" id="loading">
+    <i class="weui-loading"></i>
+    <span class="weui-loadmore__tips">正在加载</span>
+</div>
+</body>
+<script>
+    $(document).ready(page_data());
+    function page_data(){
+        var id="{$id}";
+        $.post('{:url("personal/inster_ajax")}',{type:1,id:id},function(data)
+        {
+            console.log(data);
+            if(data.length)
+            {
+                //处理数据部分 .......
+                var str='';
+                var str1='';
+                var str2='';
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].sensor_type!=4){
+                        str1="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/jiance\")}?deviceid="+data[i].id+"&role=1>"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>油烟监控详情</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                    }
+                    if (data[i].is_mine==1){
+                        str2="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/working_condition\")}?id="+data[i].id+">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>工况详情</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                    }
+                    str+="<div class=\"page-bd\">"
+                        +"<div class=\"weui-cells\">"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>客户</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].cus_name+"</div>"
+                        +"</div>"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>设备地址</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].aname+data[i].bname+data[i].cname+"</div>"
+                        +"</div>"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>设备型号</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].version_name+"</div>"
+                        +"</div>"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>设备码</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].device_code+"</div>"
+                        +"</div>"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>设备安装时间</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].install_time+"</div>"
+                        +"</div>"
+                        +"<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/edit\")}?id="+data[i].id+"&role=3>"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>修改设备信息</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                    +str1+str2
+                    +"</div>"
+                    +"</div>";
+                }
+                $("#pdiv1").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+                {
+                    loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                    $("#loading").css("display","none");//数据加载完隐藏加载提示
+                }
+
+
+        },'json')
+    }
+    var page=2;//当前页
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            getbalancelist();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+        }
+    });
+    var countPage=2;//总页数
+
+    // //获取数据
+    function getbalancelist(){
+        var id="{$id}";
+        $.post('{:url("personal/inster_ajax")}',{page:page,id:id},function(data)
+        {
+            if(data[1].length)
+            {
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //处理数据部分 .......
+                var str='';
+                var str1='';
+                var str2='';
+                for (var i = 0; i < data[1].length; i++) {
+                    if (data[1][i].sensor_type!=4){
+                        str1="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/jiance\")}?deviceid="+data[1][i].id+"&role=1>"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>油烟监控详情</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                    }
+                    if (data[1][i].is_mine==1){
+                        str2="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/working_condition\")}?id="+data[1][i].id+">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>工况详情</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                    }
+                    str+="<div class=\"page-bd\">"
+                    +"<div class=\"weui-cells\">"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>客户</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].cus_name+"</div>"
+                    +"</div>"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>设备地址</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].aname+data[1][i].bname+data[1][i].cname+"</div>"
+                    +"</div>"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>设备型号</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].version_name+"</div>"
+                    +"</div>"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>设备码</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].device_code+"</div>"
+                    +"</div>"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>设备安装时间</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].install_time+"</div>"
+                    +"</div>"
+                    +"<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/edit\")}?id="+data[1][i].id+"&role=3>"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>修改设备信息</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"
+                    +"</div>"
+                    +"</a>"
+                    +str1+str2
+                    +"</div>"
+                    +"</div>";
+                }
+                $("#pdiv1").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+                {
+                    loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                    $("#loading").css("display","none");//数据加载完隐藏加载提示
+                }
+
+        },'json')
+        page++;
+    }
+</script>
+</html>

@@ -1,0 +1,149 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px">
+<!--<div id="s1"></div>-->
+    <div class="weui-panel weui-panel_access weui-cell_swiped" id="s1">
+        <!--<div class="weui-cell__ft">-->
+            <!--<a class="weui-swiped-btn weui-swiped-btn_warn delete-swipeout" href="javascript:">删除</a>-->
+        <!--</div>-->
+    </div>
+    <div class="weui-loadmore" id="loading" style="display: none;">
+        <i class="weui-loading"></i>
+        <span class="weui-loadmore__tips">正在加载</span>
+    </div>
+    <div class="page-bd-15 tab-bottom border-radius  w" style="border: #E4E4E4 1px solid; padding:3px;">
+
+        <a {empty name="cart_ids"}
+            href={:url("user/add_address")}
+           {else /}
+            href={:url("user/add_address")}?cart_ids={$cart_ids}
+           {/empty}
+        class="weui-btn bg-blue weui-footer_fixed-bottom" style="float:right;margin-right: 2em;width:40%;">+新增收货地址</a>
+    </div>
+</body>
+<script>
+
+    var type="{$type}";
+    var cart_ids="{$cart_ids}";
+    var page=1;//当前页
+    $(document).ready(get_list());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            get_list();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            // $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+            $("#loading>span").html("");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function get_list(){
+        $.post('{:url("user/list_ajax")}',{page:page},function(data)
+        {
+            if(data[1].length)
+            {
+                $("#loading").css("display","inline");
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //     //处理数据部分 .......
+                var str='';
+                var str1='';
+                var str2='';
+                var str3='';
+                for (var i = 0; i < data[1].length; i++) {
+                    if(data[1][i].is_default==1)
+                    {
+                        str1="<div class=\"weui-cell__ft weui-media-box__desc page-bd-15\" style=\"color:orange;\">默认地址</div>";
+                    }else
+                    {
+                        str1="";
+                    }
+                    if(type)
+                    {
+                        str2="<div class=\"weui-form-li\">" +
+                            "<input class=\"weui-form-checkbox\"  name="+data[1][i].id+"  id="+data[1][i].id+" onclick=select_add("+data[1][i].id+",cart_ids) type=\"radio\">" +
+                            "<label for="+data[1][i].id+" >" +
+                            "<i class=\"weui-icon-radio\" style=\"float: right;\"></i>";
+                        str3="</label>" +
+                            "</div>";
+                    }else
+                    {
+                        str2="";
+                        str3="";
+                    }
+                    str+=str2+"<div class=\"weui-panel__bd border-radius  w\" style=\"border: #E4E4E4 2px groove;\">"+
+                            "<div class=\"weui-media-box weui-media-box_text\">"+
+                                "<h4 class=\"weui-media-box__title\">"+data[1][i].real_name+data[1][i].phone+"</h4>"+
+                                "<p class=\"weui-media-box__desc\">"+data[1][i].region+data[1][i].detail_address+"</p>"+
+                                str1+
+                                "<div class=\"weui-cell__ft page-bd-15\">"+
+                                    "<div class=\"weui-label-list\" style=\"margin:0;\">"+
+                                        "<a href={:url(\"user/edit_address\")}?id="+data[1][i].id+" class=\"label f-white bg-blue\">修改</a>"+
+                                        "<a href=\"javascript:;\" onclick=del("+data[1][i].id+") class=\"label f-white bg-orange\">删除</a>"+
+                                    "</div>"+
+                                "</div>"+
+                            "</div>"+
+                        "</div>"+
+                        str3;
+                }
+                $("#s1").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+            {
+
+            }
+
+        },'json')
+        page++;
+    }
+    function del(id)
+    {
+        var r=confirm("是否删除此地址");
+        if (r==true){
+            $.post('{:url("user/del_address")}',{id:id},function(data)
+            {
+                if(data.code==200){
+                    $.toptip(data.msg,'success');
+                    setTimeout(function () {
+                        window.location.href = '{:url("user/address_list")}';
+                    },800)
+                }else
+                {
+                    $.toptip(data.msg,'error');
+                    return false;
+                }
+            },'json');
+        }
+
+    }
+    function select_add(id,cart_id) {
+        window.location.href='{:url("order/create_order")}?add_id='+id+'&cart_ids='+cart_ids;
+    }
+    (function(){
+        //先判断是否为微信浏览器//可使用weuialert
+        var ua = window.navigator.userAgent.toLowerCase();
+        if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+            //confirm，
+            window.confirm = function (message) {
+                var iframe = document.createElement("IFRAME");
+                iframe.style.display = "none";
+                iframe.setAttribute("src", 'data:text/plain,');
+                document.documentElement.appendChild(iframe);
+                var alertFrame = window.frames[0];
+                var result = alertFrame.window.confirm(message);
+                iframe.parentNode.removeChild(iframe);
+                return result;
+            };
+        }
+    })();
+</script>
+</html>

@@ -1,0 +1,144 @@
+{include file='layout/head' /}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.0.2/css/swiper.min.css">
+    <style>
+        html {font-size:62.5%;}
+        .placeholder {
+            font-size: 1.9rem;
+            text-align: center;
+            color: #cfcfcf;
+        }
+        .placeholder1 {
+            height:10rem;
+            text-align: center;
+            color: #cfcfcf;
+        }
+        .placeholder2 {
+            /*font-size: 1.8rem;*/
+            text-align: center;
+            color: #cfcfcf;
+        }
+        .swiper-container {
+            width: 100%;
+            height: 90%;
+        }
+        .swiper-slide {
+            text-align: center;
+            font-size: 1.6rem;
+            /*background: #fff;*/
+
+            /* Center slide text vertically */
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            transition: 300ms;
+            transform: scale(0.8);
+            color: #fff;
+        }
+        .swiper-slide-active,.swiper-slide-duplicate-active{
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body ontouchstart ontouchstart  style="padding: 0 3px 3px 3px">
+<div class="page-bd" style="background-color: #000;">
+    <video width="100%" controls x5-playsinline="true" autoplay="autoplay" muted loop webkit-playsinline="true">
+        <!--poster="/static/images/timg.jpeg"-->
+        <source src="/static/video/see.mp4" type="video/mp4">
+        <!--<source src="movie.ogg" type="video/ogg">-->
+        <!--<source src="movie.webm" type="video/webm">-->
+        <!--<object data="movie.mp4" width="320" height="240">-->
+            <!--<embed src="movie.swf" width="320" height="240">-->
+        <!--</object>-->
+        <!--您的浏览器不支持 video 标签-->
+    </video>
+    <!--1框框2点击放大才能放3进来默认显示-->
+    <div class="weui-flex">
+        <div class="weui-flex__item"><div class="placeholder2">物流查询</div></div>
+        <div class="weui-flex__item"><div class="placeholder2">质量检测</div></div>
+        <div class="weui-flex__item"><div class="placeholder2">公司简介</div></div>
+        <div class="weui-flex__item"><div class="placeholder2">新手教程</div></div>
+    </div>
+    <div class="weui-flex" >
+        <div class="weui-flex__item">
+            <div class="placeholder">排名</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">排名123123</div>
+            <div class="placeholder">
+                {foreach $rank as $key=>$val }
+                <div>{$val.nickname}</div>
+                {/foreach}
+            </div>
+        </div>
+        <div class="weui-flex__item">
+            <div class="placeholder1">
+                <div class="swiper-container">
+                    <div class="swiper-wrapper">
+                        {foreach $list as $key=>$val }
+                        <div class="swiper-slide">{$val.nickname}<span style="color: orange;font-size: 1.3rem">已经购买</span></div>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+
+            <div class="placeholder">
+                <a class="weui-cell " href={:url("good/good_details")}?id=1 id="ani">
+                    <div class="weui-cell__bd">
+                        <p>￥168</p>
+                    </div>
+                    <div class="weui-cell__ft">点击购买</div>
+                </a>
+                <a class="weui-cell " href={:url("good/good_details")}?id=1 id="ani">
+                    <div class="weui-cell__bd">
+                        <p>￥168</p>
+                    </div>
+                    <div class="weui-cell__ft">点击购买</div>
+                </a>
+            </div>
+            <div class="placeholder">1<br/>2<br/>3<br/>4<br/>5</div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.0.2/js/swiper.min.js"></script>
+
+<script>
+
+    var swiper = new Swiper('.swiper-container', {
+        slidesPerView: 3,
+        spaceBetween: 10,
+        centeredSlides: true,
+        loop: true,
+        direction: 'vertical',
+        autoplay: {
+            delay: 3000,// 秒切换一次
+            stopOnLastSlide: false,
+            disableOnInteraction: false,
+        },
+    });
+    $(function(){
+        var ani =  $("#ani");
+        $('.cbig').click(function(){
+            // ani.removeClass();
+            ani.addClass($(this).data('a')+"  animated");
+
+        })
+
+    });
+</script>
+{include file='layout/footer' /}

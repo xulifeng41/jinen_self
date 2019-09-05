@@ -38,6 +38,7 @@ Route::group('admin', function () {
     Route::rule('edit_device','device/edit')->method('get|post');
     Route::rule('monitor1','device/monitor_datas')->method('get|post');
     Route::rule('monitor2','device/monitor_datas_table')->method('get|post');
+    Route::rule('monitor_power','device/monitor_power')->method('get|post');
     Route::rule('close_device','device/close')->method('get|post');
     Route::rule('env_show','device/env_show')->method('post');
 
@@ -53,6 +54,9 @@ Route::group('admin', function () {
     //系统设置
     Route::rule('setting','system/index')->method('get|post');
     Route::rule('other','other/index')->method('get|post');
+    Route::rule('app_versions','mobile_app_version/index')->method('get|post');
+    Route::rule('add_app_versions','mobile_app_version/add_version')->method('get|post');
+
     //杂项
     Route::rule('add_custom','other/add_custom')->method('get|post');
     Route::rule('add_device','other/add_device')->method('get|post');
@@ -77,7 +81,42 @@ Route::group('admin', function () {
     Route::rule('edit_corporation','corporation/edit_company')->method('get|post');
     Route::rule('del_corporation','corporation/del_company')->method('get|post');
 
+    //手机APP相关管理
+    //供应商管理
+    Route::rule('supplier','mobile_supplier/index')->method('get|post');
+    Route::rule('supp_wait_verify','mobile_supplier/wait_verify')->method('get|post');
+    Route::rule('supplier_detail','mobile_supplier/supplier_detail')->method('get|post');
+    Route::rule('verify_supplier','mobile_supplier/verify_supplier')->method('get|post');
+    Route::rule('close_supplier','mobile_supplier/close_supplier')->method('get|post');
+    //商品管理
+    Route::rule('mall_goods','mobile_good/index')->method('get|post');
+    Route::rule('add_good','mobile_good/add_good')->method('get|post');
+    Route::rule('good_detail','mobile_good/good_detail')->method('get|post');
+    Route::rule('edit_good','mobile_good/edit_good')->method('get|post');
+    Route::rule('del_good','mobile_good/del_good')->method('get|post');
+    Route::rule('good_catas','mobile_good/good_cata')->method('get|post');
+    Route::rule('add_good_cata','mobile_good/add_good_cata')->method('get|post');
+    Route::rule('del_good_cata','mobile_good/del_good_cata')->method('get|post');
+    Route::rule('all_suppliers','mobile_good/all_suppliers')->method('get|post');
+    Route::rule('wait_check','mobile_good/wait_check')->method('get|post');
+    Route::rule('good_recycle','mobile_good/good_recycle')->method('get|post');
+    Route::rule('recycle_good','mobile_good/recycle_good')->method('get|post');
+    Route::rule('destroy_good','mobile_good/destroy_good')->method('get|post');
+    Route::rule('upload_img','mobile_good/upload_img')->method('get|post');
+    //配送员相关
+    Route::rule('delivery','mobile_delivery/index')->method('get|post');
+
+    //资金管理
+    Route::rule('cash_outs','mobile_capital/index')->method('get|post');
+    Route::rule('capital_detail','mobile_capital/capital_detail')->method('get|post');
+    Route::rule('supp_balance_log','mobile_capital/supp_balance_log')->method('get|post');
+    Route::rule('supp_balance_detail','mobile_capital/supp_balance_detail')->method('get|post');
+    Route::rule('upload_proof','mobile_capital/upload_proof')->method('get|post');
+    Route::rule('user_balance_logs','mobile_capital/user_balance_logs')->method('get|post');
+
+
 })->prefix('admin/');
+
 
 Route::rule('get_token', 'index/index/get_token')->allowCrossDomain();
 
@@ -93,7 +132,6 @@ Route::group('wechat', function () {
     Route::rule('sms', 'personal/sms')->method('post');
     Route::rule('pregsms', 'personal/pregsms')->method('post');
     Route::rule('selectuser', 'personal/selectuser')->method('get|post');
-    Route::rule('searchajax', 'personal/searchajax')->method('get|post');
     Route::rule('dcodeajax', 'personal/dcodeajax')->method('get|post');
     Route::rule('repairsajax', 'personal/repairsajax')->method('get|post');
     Route::rule('repsajax', 'personal/repsajax')->method('get|post');
@@ -111,12 +149,19 @@ Route::group('wechat', function () {
     //业务员我售出的设备/安装员安装的设备/客户我的设备ajax数据
     Route::rule('usersajax', 'personal/usersajax')->method('get|post');
     //业务员选择页面
+    Route::rule('sell_cus', 'personal/sell_cus')->method('get|post');
     Route::rule('sellbind', 'personal/sellbind')->method('get|post');
+    Route::rule('sell_device', 'personal/sell_device')->method('get|post');
+    Route::rule('sell_dajax', 'personal/sell_dajax')->method('post');
+    //
+    Route::rule('inster', 'personal/inster')->method('get|post');
+    Route::rule('inster_ajax', 'personal/inster_ajax')->method('post');
+    //设备工况监测页面
+    Route::rule('working_condition', 'personal/working_condition')->method('get|post');
     //报修
     Route::rule('repairs', 'personal/repairs')->method('get|post');
     Route::rule('myrepairs', 'personal/myrepairs')->method('get|post');
     Route::rule('progress', 'personal/progress')->method('get|post');
-    Route::rule('test', 'personal/test')->method('get|post');
 })->prefix('wechat/');
 //卖家商城路由
 Route::group('adminmall', function () {
@@ -152,10 +197,79 @@ Route::group('adminmall', function () {
     //
 
 })->prefix('adminmall/');
+//美硒公众号
 Route::group('wechatmall', function () {
     //入口
-    Route::rule('index', 'user/index')->method('get|post');
+    Route::rule('index', 'site/index')->method('get|post');
+    //
+    Route::rule('user', 'user/index')->method('get|post');
+    Route::rule('address_list','user/address_list')->method('get|post');
+    Route::rule('add_address','user/add_address')->method('get|post');
+    Route::rule('list_ajax','user/list_ajax')->method('post');
+    Route::rule('add_ajax','user/add_ajax')->method('post');
+    Route::rule('edit_address','user/edit_address')->method('get|post');
+    Route::rule('edit_ajax','user/edit_ajax')->method('post');
+    Route::rule('del_address','user/del_address')->method('post');
+    Route::rule('code', 'user/code')->method('get|post');
+    Route::rule('referees', 'user/referees')->method('get|post');
+    Route::rule('performance', 'user/performance')->method('get|post');
+    Route::rule('performance_ajax', 'user/performance_ajax')->method('post');
+    Route::rule('cash_info', 'user/cash_info')->method('get|post');
+    Route::rule('cash_info_ajax', 'user/cash_info_ajax')->method('post');
+    //
+    Route::rule('cart', 'cart/index')->method('get|post');
+    Route::rule('service', 'service/index')->method('get|post');
+    //
+    Route::rule('cash', 'cash/index')->method('get|post');
+    Route::rule('add_bank', 'cash/add_bank')->method('get|post');
+    Route::rule('add_user', 'cash/add_user')->method('get|post');
+    Route::rule('bank_ajax', 'cash/bank_ajax')->method('post');
+    Route::rule('user_ajax', 'cash/user_ajax')->method('post');
+    Route::rule('cash_ajax', 'cash/cash_ajax')->method('post');
+    Route::rule('sms', 'cash/sms')->method('post');
+    Route::rule('password_ajax', 'cash/password_ajax')->method('post');
+    //
+    Route::rule('order', 'order/index')->method('get|post');
+    Route::rule('order_list', 'order/order_list')->method('post');
+    Route::rule('details', 'order/order_details')->method('get|post');
+    Route::rule('create_order', 'order/create_order')->method('get|post');
+    Route::rule('progress', 'order/progress')->method('post');
+    Route::rule('wxpay_now', 'order/wxpay_now')->method('post');
+    Route::rule('pay_check', 'order/pay_check')->method('get|post');
+    Route::rule('tt', 'order/test')->method('get|post');
+    //
+    Route::rule('good_details', 'good/good_details')->method('get|post');
+    Route::rule('add_cart', 'good/add_cart')->method('post');
+    Route::rule('my_cart', 'good/my_cart')->method('get|post');
+    Route::rule('del_cart', 'good/del_cart')->method('post');
+    Route::rule('update_cart', 'good/update_cart')->method('post');
+    //
+    Route::rule('insert_ranking', 'calculate/insert_ranking')->method('get|post');
+    Route::rule('havebuy', 'calculate/havebuy')->method('get|post');
+    Route::rule('data_cal', 'calculate/data_cal')->method('get|post');
 })->prefix('wechatmall/');
+//美硒后台
+Route::group('wadminmall', function () {
+    //入口
+    Route::rule('index', 'index/index')->method('get|post');
+    Route::rule('wadmin_login', 'login/index')->method('get|post');
+    Route::rule('wadmin_loginout', 'login/login_out')->method('get');
+    //
+    Route::rule('wadmin_edit_self_pwd', 'login/edit_pwd')->method('get|post');
+    Route::rule('wadmin_edit_profile', 'login/edit_profile')->method('get|post');
+
+    Route::rule('check_index', 'order/check_index')->method('get|post');
+    Route::rule('order_check', 'order/order_check')->method('get|post');
+    Route::rule('deliver', 'order/deliver')->method('get|post');
+    Route::rule('order_deliver', 'order/order_deliver')->method('get|post');
+    Route::rule('return_index', 'order/return_index')->method('get|post');
+    Route::rule('return_check', 'order/return_check')->method('get|post');
+    Route::rule('receive_check', 'order/receive_check')->method('get|post');
+
+    Route::rule('cash_index', 'cash/cash_index')->method('get|post');
+    Route::rule('check_cash', 'cash/check_cash')->method('get|post');
+
+})->prefix('wadminmall/');
 return [
 
 ];

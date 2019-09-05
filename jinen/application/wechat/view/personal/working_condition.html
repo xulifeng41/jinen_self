@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,user-scalable=no">
+    <link rel="icon" href="https://jscdn.com.cn/highcharts/images/favicon.ico">
+    <link rel="stylesheet" href="/static/layui/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://img.highcharts.com.cn/jquery/jquery-1.8.3.min.js"></script>
+    <title>设备电源监控</title>
+    <style>
+        .power-status{
+            text-align: center;
+            line-height: 20px;
+        }
+        .edit-div{
+            display: flex;
+            justify-content: center;
+        }
+        .edit-btn{
+            padding: 5px 12px;
+        }
+        .edit-input{
+            width: 60px;
+            text-align: center;
+        }
+        .pst{
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            -webkit-border-radius: 50%;
+            -moz-border-radius: 50%;
+            border-radius: 50%;
+        }
+        .quan{
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        .power{
+            width: 400px;
+            height: 500px;
+
+        }
+        .tu{
+            width: 100%;
+            height: 68%;
+        }
+        .switch-btn{
+            padding: 0 10px;
+            color: #fff9ec;
+            border: 0;
+        }
+        .sbn-off{
+            margin-right: 10px;
+            background: #c23531;
+        }
+        .sbn-on{
+            margin-left: 10px;
+            background: #91c7ae;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quan">
+    {notempty name="$powers"}
+    {foreach $powers as $k=> $v}
+    <div class="power">
+        <div class="power-status" style="margin-top: 20px;">
+            {$v.power_num}号电源
+            {eq name="$v.switch" value="1"}<span class="pst" style="background: green;"></span>{else/}<span class="pst" style="background: red;"></span>{/eq}
+            <div>
+                工作状态：{eq name="$v.status" value="1"}<span style="color: green;">正常</span>{else/}<span style="color: red;">电源保护</span>{/eq}
+            </div>
+            <div>
+                短路保护：{eq name="$v.short_protect" value="0"}<span style="color: green;">正常</span>{else/}<span style="color: red;">短路保护</span>{/eq}
+            </div>
+            <div>
+                超温保护：{eq name="$v.exceed_temperature" value="0"}<span style="color: green;">正常</span>{else/}<span style="color: red;">超温保护</span>{/eq}
+            </div>
+            {if ( $user.role == 3) OR ( $user.role == 5) }
+            <div>
+                电源是否自动 ：
+                <form class="layui-form" action="" style="display: inline-block;">
+                    <div class="layui-input-inline" style="height:20px;margin-top:-15px;">
+                        <input type="checkbox" value="{$v.power_num}"lay-skin="switch" lay-text="自动|手动" lay-filter="manual" {eq name="$v.is_manual" value="0"}checked{/eq}>
+                    </div>
+                </form>
+
+            </div>
+            {/if}
+        </div>
+        <div id="main{$v.power_num}" class="tu"></div>
+        <div class="edit-div">
+            <button type="button" class="switch-btn sbn-off" data-in="{$v.power_num}" {if ( $user.role == 2) OR ( $user.role == 4) }
+                disabled
+            {/if}>关闭电源</button>
+            <button type="button" class="edit-btn edit-bth-dec" data-in="{$v.power_num}"
+            {if ( $user.role == 2) OR ( $user.role == 4) }
+            disabled
+            {/if}>-</button>
+            <input type="input" class="edit-input" disabled value="{$v.high_voltage}">
+            <button type="button" class="edit-btn edit-bth-inc" data-in="{$v.power_num}"
+            {if ( $user.role == 2) OR ( $user.role == 4) }
+            disabled
+            {/if}>+</button>
+            <button type="button" class="switch-btn sbn-on" data-in="{$v.power_num}" {if ( $user.role == 2) OR ( $user.role == 4) }
+            disabled
+            {/if}>打开电源</button>
+        </div>
+    </div>
+    {/foreach}
+    {else/}
+    <div style="text-align: center;font-size: 20px;width: 100%;line-height: 40px;">
+        您的设备不具备工况监测功能
+    </div>
+    {/notempty}
+</div>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+<script src="../../static/layui/layui/layui.all.js"></script>
+<script type="text/javascript">
+    var aa = 9;
+    var window = [];
+    var option = {
+        tooltip : {
+            formatter: "{a}<br/>{b} : {c}v"
+        },
+        toolbox: {
+            // feature: {
+            //     restore: {},
+            //     saveAsImage: {}
+            // }
+        },
+        axisLine: {
+            lineStyle: {
+                width: 10
+            }
+        },
+        series: [
+            {
+                name: '电源电压',
+                type: 'gauge',
+                z: 3,
+                min: 10000,
+                max: 20000,
+                splitNumber: 10,
+                axisLine: {            // 坐标轴线
+                    lineStyle: {
+                        color: [[0.1, '#91c7ae'], [0.7, '#63869e'], [1, '#c23531']],// 属性lineStyle控制线条样式
+                        width: 10
+                    }
+                },
+                axisTick: {            // 坐标轴小标记
+                    length: 15,        // 属性length控制线长
+                    lineStyle: {       // 属性lineStyle控制线条样式
+                        color: 'auto'
+                    }
+                },
+                splitLine: {           // 分隔线
+                    length: 20,         // 属性length控制线长
+                    lineStyle: {       // 属性lineStyle（详见lineStyle）控制线条样式
+                        color: 'auto'
+                    }
+                },
+                detail: {
+                    formatter:'{value}v',
+                    offsetCenter:[0,'65%']
+                },
+                data:[{value: 13000, name: '电源电压'}]
+            }
+        ]
+    };
+    // 基于准备好的dom，初始化echarts实例
+    $.get('{:url("personal/working_condition")}?id='+'{$id}',function (res) {
+        if (res.code==200){
+            res.data.forEach(function(v,i){
+                var name = "myChart"+v.power_num;   //生成变量名
+                window[name] = echarts.init(document.getElementById('main'+v.power_num));
+                option.series[0].name = parseInt(i)+1+'号电源';
+                option.series[0].data[0].value = v.high_voltage;
+                window[name].setOption(option);
+            })
+        }
+    },'json');
+
+    //定时读取数据库获取最新的电源信息
+    setInterval(function(){
+        $.get('{:url("personal/working_condition")}?id='+'{$id}',function (res) {
+            if (res.code==200){
+                res.data.forEach(function(v,i){
+                    option.series[0].data[0].value = v.high_voltage;
+                    window["myChart"+v.power_num].setOption(option,true);
+                })
+            }
+        },'json');
+    },3000);
+
+    layui.use('form', function(){
+        var form = layui.form;
+        //手自动切换
+        form.on('switch(manual)', function(data){
+            var switch1 = data.elem;
+            var is_manual;
+            is_manual = data.elem.checked ? 0 : 1;
+            var power_num = data.value;
+            switch1.disabled = true;
+            $.post('{:url("personal/working_condition")}',{id: '{$id}', type: is_manual, power_num: power_num, switch_type: 'manual'},function(res){
+                // console.log(res);
+                layer.msg(res.msg);
+                if (res.code==200){
+                    setTimeout(function(){
+                        switch1.disabled = false;
+                    },1500)
+                }else{
+                    switch1.disabled = false;
+                }
+            })
+
+        });
+    });
+    // 降低电压
+    $('.edit-bth-dec').click(function(){
+        var vl = $(this).next().val();
+        var ind = $(this).data('in');
+        var obj = $(this);
+        obj.attr('disabled','disabled');
+        if (vl > 10000){
+            $.post('{:url("personal/working_condition")}',{id: '{$id}',type: 'dec',power_num: ind, switch_type: 'i_dpower'},function(res){
+                // console.log(res);
+                if (res.code==200) {
+                    layer.msg(res.msg);
+                    //发送命令后，1秒钟后再次读取数据库数据,并更新图表
+                    setTimeout(function () {
+                        $.get('{:url("personal/working_condition")}?id='+'{$id}',function(res){
+                            if (res.code==200){
+                                //循环res.data，更新图表
+                                var zhi = res.data.filter(function (v) {
+                                    return v.power_num==ind;
+                                })
+                                obj.removeAttr('disabled');
+                                obj.prev().val(zhi[0].high_voltage);
+                                option.series[0].data[0].value = zhi[0].high_voltage;
+                                window['myChart'+ind].setOption(option,true);
+                            }
+                        },'json');
+                    },1500)
+                }
+            },'json');
+        }else{
+            layer.msg('电压已经到最低值',{icon: '2'});
+        }
+    });
+
+    // 加高电压
+    $('.edit-bth-inc').click(function(){
+        var vl = $(this).prev().val();
+        var ind = $(this).data('in');
+        var obj = $(this);
+        obj.attr('disabled','disabled');
+        if (vl < 20000){
+            $.post('{:url("personal/working_condition")}',{id: '{$id}',type: 'inc',power_num: ind, switch_type: 'i_dpower'},function(res){
+                // console.log(res);
+                if (res.code==200) {
+                    layer.msg(res.msg);
+                    //发送命令后，1秒钟后再次读取数据库数据,并更新图表
+                    setTimeout(function () {
+                        $.get('{:url("personal/working_condition")}?id='+'{$id}',function(res){
+                            if (res.code==200){
+                                //循环res.data，更新图表
+                                var zhi = res.data.filter(function (v) {
+                                    return v.power_num==ind;
+                                })
+                                obj.removeAttr('disabled');
+                                obj.prev().val(zhi[0].high_voltage);
+                                option.series[0].data[0].value = zhi[0].high_voltage;
+                                window['myChart'+ind].setOption(option,true);
+                            }
+                        });
+                    },1500)
+                }
+            },'json');
+        }else{
+            layer.msg('电压已经到最大值',{icon: '2'});
+        }
+    })
+
+    //关闭/打开电源
+    $('.switch-btn').click(function(){
+        //电源编号
+        var ind = $(this).data('in');
+        var son = $(this).hasClass('sbn-off') ? 'off' : 'on';
+        var notice = $(this).hasClass('sbn-off') ? '你确定要关闭这个电源' : '你确定要打开这个电源';
+        layer.confirm(notice+'？', {
+            btn: ['取消','确定'] //按钮
+        }, function(index){
+            layer.close(index);
+        }, function(){
+            $.post('{:url("personal/working_condition")}',{id: '{$id}',type: son,power_num: ind, switch_type: 'c_opower'},function(res){
+                // console.log(res);
+                if (res.code==200) {
+                    layer.msg(res.msg);
+                }
+            },'json');
+        });
+    });
+
+</script>
+
+</body>
+</html>

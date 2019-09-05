@@ -1,0 +1,161 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px" >
+    <div class="page-bd">
+        <div class="weui-panel weui-panel_access">
+            <div class="weui-panel__bd">
+                <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                    <div class="weui-media-box__hd" style="">
+                        <img class="weui-media-box__thumb" src="{$winfo.headimgurl}" alt="" style="border-radius: 10%;">
+                    </div>
+                    <div class="weui-media-box__bd">
+                        <h4 class="weui-media-box__title">{$winfo.nickname}</h4>
+                        <p class="weui-media-box__desc">地区:{$winfo.province}{$winfo.city}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="weui-cells">
+            <div class="weui-cell border  w border-radius  w">
+                <div class="weui-cell__bd">
+                    <p>总佣金</p>
+                </div>
+                <div class="weui-cell__ft">{$winfo.balance_all}</div>
+            </div>
+        </div>
+        <div class="weui-cells">
+            <div class="weui-cell border  w border-radius  w">
+                <div class="weui-cell__bd">
+                    <p>可提取佣金</p>
+                </div>
+                <div class="weui-cell__ft">{$winfo.balance}</div>
+            </div>
+        </div>
+        <form action='' method="post" id="form">
+            <div class="weui-cells">
+                <div class="weui-cell border  w border-radius  w">
+                    <div class="weui-cell__bd">
+                        <p>现提取佣金</p>
+                    </div>
+                    <div class="weui-cell__ft"><input class="weui-input border  w border-radius  w" pattern="[0-9]*" placeholder="0.00" type="number" name="cash" id="cash" style="width:30%;text-align:right;"></div>
+                </div>
+            </div>
+            <div class="weui-cells">
+                <div class="weui-cell border  w border-radius  w">
+                    <div class="weui-cell__hd"><label for="bank_code" class="weui-label">银行卡</label></div>
+                    <div class="weui-cell__bd">
+                        <input class="weui-input" id="bank_code" type="text" value="">
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="bank_id" value="" id="bcode">
+            <div class="page-bd-15" style="padding:3px;margin-top: 2em">
+                <button type="button" value="" class="weui-btn weui-btn_primary bg-blue" id="btn" style="margin-right: 1.5em;">+确认申请</button>
+            </div>
+        </form>
+    </div>
+</body>
+<script>
+    var user_id="{$Think.session.user_id}";
+    var is_bind="{$is_bind}";
+    $(document).ready(user());
+    function user()
+    {
+        if(!user_id)
+        {
+            $.alert("请先进行绑定","提示",function(){
+                window.location.href = '{:url("cash/add_user")}';
+                return false;
+            });
+        }else if(is_bind!=1)
+        {
+            $.alert("请先完善银行卡信息","提示",function(){
+                window.location.href = '{:url("cash/add_bank")}';
+                return false;
+            });
+        }
+        return true;
+    }
+    var binfo = {php} echo $binfo ;{/php};
+    $("#bank_code").select(
+        {title: "选择银行卡",
+            items: binfo,
+        });
+    //
+    $(function(){
+            $(document).on("click","#btn",function(){
+                if(user())
+                {
+                    $("#bcode").val($('#bank_code').data('values'));
+                    var form_datas = $('#form').serializeArray();
+                    var can = {};
+                    form_datas.forEach(function(value,index){
+                        can[value.name] = value.value;
+                    })
+
+                    if(can.cash==""){
+                        $.toptip('请填写提现金额', 'error');
+                        $("#btn").attr("disabled","disabled");
+                        $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                        return false;
+                    }
+                    if(can.bank_id==""){
+                        $.toptip('请选择银行卡', 'error');
+                        $("#btn").attr("disabled","disabled");
+                        $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                        return false;
+                    }
+                    $.prompt({
+                        title: '密码验证',
+                        text: '请输入密码',
+                        password: '',
+                        empty: false, // 是否允许为空
+                        onOK: function (password) {
+                            $.post('{:url("cash/password_ajax")}',{password:password},function(data)
+                            {
+                                if(data.code==200){
+                                    $.toptip(data.msg,'success');
+                                    $.post('{:url("cash/cash_ajax")}',can,function(res)
+                                    {
+                                        if(res.code==200){
+                                            $.toptip(res.msg,'success');
+                                            setTimeout(function () {
+                                                window.location.href = '{:url("user/index")}';
+                                            },800)
+                                        }else
+                                        {
+                                            $.toptip(res.msg,'error');
+                                            return false;
+                                        }
+                                    },'json');
+                                }else
+                                {
+                                    $.toptip(data.msg,'error');
+                                    return false;
+                                }
+                            },'json');
+                            //点击确认
+                        },
+                        onCancel: function () {
+                            //点击取消
+                        }
+                    });
+                }
+
+
+            })
+        });
+        $(function(){
+            $(document).on("focus","#cash",function(){
+                $("#btn").removeAttr("disabled");
+                $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+            })
+        });
+        $(function(){
+            $(document).on("focus","#bank_code",function(){
+                $("#btn").removeAttr("disabled");
+                $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+            })
+        });
+</script>
+</html>

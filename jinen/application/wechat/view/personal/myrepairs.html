@@ -31,8 +31,53 @@
     </div>
 </body>
 <script>
-    var page=1;//当前页
-    $(document).ready(getbalancelist());
+
+    $(document).ready(page_data());
+    function page_data(){
+        $.post('{:url("personal/repsajax")}',{type:1},function(data)
+        {
+            if(data.length)
+            {
+                var str='';
+                for (var i = 0; i < data.length; i++) {
+                    str+="<div class=\"weui-cells__title\">报修内容</div>"
+                        +"<div class=\"weui-cells\">"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>报修原因</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].reason+"</div>"
+                        +"</div>"
+                        +"<div class=\"weui-cell\">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>上报时间</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"+data[i].create_time+"</div>"
+                        +"</div>"
+                        +"<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/progress\")}?id="+data[i].id+">"
+                        +"<div class=\"weui-cell__bd\">"
+                        +"<p>查看进度</p>"
+                        +"</div>"
+                        +"<div class=\"weui-cell__ft\">"
+                        +"</div>"
+                        +"</a>"
+                        +"</div>"
+                        +"</div>";
+                }
+                $("#pdiv").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+            {
+                $("#loading>i").css("display","none");
+                $("#loading>span").html("");
+            }
+
+        },'json')
+        page++;
+    }
+    var page=2;//当前页
     //滚动加载
     var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
     $(document.body).infinite().on("infinite", function() {
@@ -47,7 +92,7 @@
             $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
         }
     });
-    var countPage=1;//总页数
+    var countPage=2;//总页数
     // //获取数据
     function getbalancelist(){
         $.post('{:url("personal/repsajax")}',{page:page},function(data)
@@ -59,29 +104,29 @@
                 //处理数据部分 .......
                 var str='';
                 for (var i = 0; i < data[1].length; i++) {
-                    str+="<div class=\"weui-cells__title\">报修内容</div>";
-                    str+="<div class=\"weui-cells\">";
-                    str+="<div class=\"weui-cell\">";
-                    str+="<div class=\"weui-cell__bd\">";
-                    str+="<p>报修原因</p>";
-                    str+="</div>";
-                    str+="<div class=\"weui-cell__ft\">"+data[1][i].reason+"</div>";
-                    str+="</div>";
-                    str+="<div class=\"weui-cell\">";
-                    str+="<div class=\"weui-cell__bd\">";
-                    str+="<p>上报时间</p>";
-                    str+="</div>";
-                    str+="<div class=\"weui-cell__ft\">"+data[1][i].create_time+"</div>";
-                    str+="</div>";
-                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/progress\")}?id="+data[1][i].id+">";
-                    str+="<div class=\"weui-cell__bd\">";
-                    str+="<p>查看进度</p>";
-                    str+="</div>"
-                    str+="<div class=\"weui-cell__ft\">";
-                    str+="</div>";
-                    str+="</a>";
-                    str+="</div>";
-                    str+="</div>";
+                    str+="<div class=\"weui-cells__title\">报修内容</div>"
+                    +"<div class=\"weui-cells\">"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>报修原因</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].reason+"</div>"
+                    +"</div>"
+                    +"<div class=\"weui-cell\">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>上报时间</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"+data[1][i].create_time+"</div>"
+                    +"</div>"
+                    +"<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/progress\")}?id="+data[1][i].id+">"
+                    +"<div class=\"weui-cell__bd\">"
+                    +"<p>查看进度</p>"
+                    +"</div>"
+                    +"<div class=\"weui-cell__ft\">"
+                    +"</div>"
+                    +"</a>"
+                    +"</div>"
+                    +"</div>";
                 }
                 $("#pdiv").append(str);
                 loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发

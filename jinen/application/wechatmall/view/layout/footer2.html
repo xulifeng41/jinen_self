@@ -1,0 +1,50 @@
+    <div class="weui-tab tab-bottom " style="height:1rem;">
+
+        <div class="weui-tabbar">
+            <a href={:url("user/index")} class="weui-tabbar__item">
+                <i class="icon icon-59 f27 weui-tabbar__icon"></i>
+                <p class="weui-tabbar__label">返回</p>
+            </a>
+            <a href={:url("site/index")} class="weui-tabbar__item">
+                <i class="icon icon-27 f27 weui-tabbar__icon"></i>
+                <p class="weui-tabbar__label">首页</p>
+            </a>
+            <a href={:url("good/my_cart")} class="weui-tabbar__item">
+                <i class="icon icon-24 f27 weui-tabbar__icon"></i>
+                <p class="weui-tabbar__label">购物车</p>
+            </a>
+        </div>
+    </div>
+</body>
+
+<script>
+    $(function(){
+
+        $('.weui-tab').tab({
+            defaultIndex: 0,
+            activeClass: 'weui-bar__item_on',
+            // onToggle: function (index) {
+            //     if (index > 0) {
+            //         $.toast(index)
+            //     }
+            // }
+        })
+    })
+
+
+</script>
+    <script>
+        var is_sub="{$Think.session.is_sub}";
+        $(document).ready(is_sub1());
+        function is_sub1()
+        {
+            if(is_sub!=1)
+            {
+                $.alert("提示","请先关注公众号",function(){
+                    window.location.href = 'https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzAwNzg5NDg1Ng==&scene=124#wechat_redirect';
+                });
+            }
+
+        }
+    </script>
+</html>

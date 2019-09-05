@@ -1,0 +1,106 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px" id="body">
+<h3 >业绩列表</h3>
+<table>
+    <thead>
+    <tr><th>类型</th><th>金额</th><th>产生时间</th></tr>
+    </thead>
+    <tbody id="tbody">
+
+
+    </tbody>
+</table>
+<div class="weui-loadmore" id="loading" style="display: none;">
+    <i class="weui-loading"></i>
+    <span class="weui-loadmore__tips">正在加载</span>
+</div>
+
+</body>
+<script>
+    var page=1;//当前页
+    $(document).ready(get_list());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            get_list();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
+            $("#loading>span").html("");
+        }
+    });
+    var countPage=1;//总页数
+    // //获取数据
+    function get_list(){
+        $.post('{:url("user/performance_ajax")}',{page:page},function(data)
+        {
+            console.log(data);
+            if(data[1].length)
+            {
+                $("#loading").css("display","inline");
+                //这里计算出总页数。。一般是后台给的
+                countPage=data.maxpage;
+                //     //处理数据部分 .......
+                var str='';
+                var str1='';
+                var str2='';
+                for (var i = 0; i < data[1].length; i++) {
+                    switch(data[1][i].type)
+                    {
+                        case 1:
+                            str1='订单返利';
+                            str2="+";
+                            break;
+                        case 2:
+                            str1='下级介绍';
+                            str2="+";
+                            break;
+                        case 3:
+                            str1='中奖';
+                            str2="+";
+                            break;
+                        case 4:
+                            str1='团队金';
+                            str2="+";
+                            break;
+                        case 5:
+                            str1='提现';
+                            str2="-";
+                            break;
+                        case 6:
+                            str1='团队金';
+                            str2="-";
+                            break;
+                        case 7:
+                            str1='净赚';
+                            str2="+";
+                            break;
+                    }
+                    str+="<tr><td title=\"类型\">"+str1+"</td>" +
+                        "<td title=\"金额\">"+str2+""+data[1][i].balance+"</td><td title=\"产生时间\">"+data[1][i].create_time+"</td></tr>";
+                }
+                $("#tbody").append(str);
+                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+            {
+                str="<div class=\"weui-msgbox\" id=\"s3\">"+
+                    "<p>"+
+                    "<i ></i>暂无业绩信息"+
+                    "</p>"+
+                    "</div>";
+                $("#body").html(str);
+            }
+
+        },'json')
+        page++;
+    }
+</script>
+</html>

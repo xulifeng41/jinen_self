@@ -1,0 +1,33 @@
+    <div class="weui-tab tab-bottom " style="height:1rem;">
+
+    <div class="weui-tabbar">
+        <a href={:url("order/index")} class="weui-tabbar__item">
+            <i class="icon icon-67 f27 weui-tabbar__icon"></i>
+            <p class="weui-tabbar__label">我的订单</p>
+        </a>
+        <a href={:url("user/code")} class="weui-tabbar__item">
+            <i class="icon icon-46 f27 weui-tabbar__icon"></i>
+            <p class="weui-tabbar__label">我的二维码</p>
+        </a>
+        <a href={:url("user/referees")} class="weui-tabbar__item ">
+            <i class="icon icon-30 f27 weui-tabbar__icon" ></i>
+            <p class="weui-tabbar__label">我的推荐人</p>
+        </a>
+    </div>
+</div>
+</body>
+    <script>
+        var is_sub="{$Think.session.is_sub}";
+        $(document).ready(is_sub1());
+        function is_sub1()
+        {
+            if(is_sub!=1)
+            {
+                $.alert("提示","请先关注公众号",function(){
+                    window.location.href = 'https://mp.weixin.qq.com/mp/profile_ext?action=home&__biz=MzAwNzg5NDg1Ng==&scene=124#wechat_redirect';
+                });
+            }
+
+        }
+    </script>
+</html>

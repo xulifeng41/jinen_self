@@ -78,12 +78,25 @@
     </div>
 
     <div class="layui-form-item">
+        <label class="layui-form-label">商品排序</label>
+        <div class="layui-input-block">
+            <input type="text" name="sort" lay-verify="required" autocomplete="off" class="layui-input" value="{$goodss.sort}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
         <label class="layui-form-label">是否上架</label>
         <div class="layui-input-block">
             <input type="checkbox" name="is_sale" lay-skin="switch" lay-filter="switchTest" {neq name="goodss.is_sale" value="0" } checked{/neq}  lay-text="上架|不上架">
         </div>
     </div>
 
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否热销</label>
+        <div class="layui-input-block">
+            <input type="checkbox" name="is_hot" lay-skin="switch" lay-filter="switchTest" {neq name="goodss.is_hot" value="0" } checked{/neq}  lay-text="热销|不热销">
+        </div>
+    </div>
 
     <div class="layui-form-item">
         <div class="layui-input-block">

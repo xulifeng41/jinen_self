@@ -86,6 +86,7 @@ class Goods extends Adminm
                 $params = $request->except(['image','is_change','good_img','is_sale']);
             }
             $params['is_sale']=$request->param('is_sale')?1:0;
+            $params['is_hot']=$request->param('is_sale')?1:0;
             $params['update_time']=date('Y-m-d H:i:s');
             $params['is_check']=0;
             if(MallGoods::update($params,['id' => $gid])){

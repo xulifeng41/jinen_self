@@ -10,8 +10,7 @@
 
     <script src="/static/js/weui/zepto.min.js"></script>
     <script src="/static/js/weui/zepto.weui.js"></script>
-
-
+    <script src="/static/js/weui/jquery-weui.js"></script>
 </head>
 
 <body ontouchstart>
@@ -95,35 +94,7 @@
             </a>
         </div>
         {/case}
-        {case 2}
-        <div class="weui-search-bar" id="searchBar">
-            <form class="weui-search-bar__form" action='{:url("personal/sellbind")}' method="post" id="subform">
-                <div class="weui-search-bar__box">
-                    <i class="weui-icon-search"></i>
-                    <input class="weui-search-bar__input" id="searchInput" placeholder="搜索" required="" type="search" name="searchv">
-                    <a href="javascript:" class="weui-icon-clear" id="searchClear"></a>
-                </div>
-                <label class="weui-search-bar__label" id="searchText" style="transform-origin: 0px 0px 0px; opacity: 1; transform: scale(1, 1);">
-                    <i class="weui-icon-search"></i>
-                    <span>根据客户手机号搜索</span>
-                </label>
-                <input type="hidden" name="id" value="{$info.id}">
-            </form>
-            <a href="javascript:" class="weui-search-bar__cancel-btn" id="searchCancel">取消</a>
-        </div>
-        <div class="weui-cells" id="pdiv">
-            <div class="page-hd">
-                <h1 class="page-hd-title">
-                    当前地区可选择客户
-                </h1>
-            </div>
-        </div>
-        <div class="weui-loadmore" id="loading">
-            <i class="weui-loading"></i>
-            <span class="weui-loadmore__tips">正在加载</span>
-        </div>
-        {/case}
-        {case 4 }
+        {default /}
         <div class="weui-cells">
             <div class="weui-cell">
                 <div class="weui-cell__bd">
@@ -144,7 +115,6 @@
                 <div class="weui-cell__ft">{$infos.address}</div>
             </div>
         </div>
-        {/case}
         {/switch}
     </div>
 </div>
@@ -152,85 +122,6 @@
 </body>
 <script src="/static/js/weui/picker.city.js"></script>
 {switch $info.role}
-{case 2}
-<script src="/static/js/weui/jquery-weui.js"></script>
-<script>
-    //搜索
-    $(function(){
-        $(document).on("submit","#subform",function(){
-            var id="{$info.id}";
-           var phone=$("#searchInput").val();
-            $.ajaxSettings.async = false;
-            var codes=true;
-            $.post('{:url("personal/searchajax")}',{phone:phone,id:id},function(data)
-            {
-                if(data.code==200)
-                {
-                    $.toptip("正在查找",'success');
-                }else
-                {
-                    codes=false;
-                    $.toptip(data.msg);
-                }
-            },'json')
-            return codes;
-        })
-    });
-    var page=1;//当前页
-    $(document).ready(getbalancelist());
-    //滚动加载
-    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
-    $(document.body).infinite().on("infinite", function() {
-        $("#loading").css("display","block");//显示 加载中图标
-        if(loading) return;
-        loading = true;
-        if(page<=countPage){
-            getbalancelist();
-        }else{
-            $(document.body).destroyInfinite();//到最后一页时，销毁它
-            $("#loading>i").css("display","none");
-            $("#loading>span").html("已经没有数据啦~").css("color","#BDBDBD");
-        }
-    });
-    var countPage=1;//总页数
-    // //获取数据
-    function getbalancelist(){
-        $.post('{:url("personal/selectuser")}',{page:page},function(data)
-        {
-            if(data[1].length)
-            {
-                //这里计算出总页数。。一般是后台给的
-                countPage=data.maxpage;
-                //处理数据部分 .......
-                var str='';
-                for (var i = 0; i < data[1].length; i++) {
-                    str+="<a class=\"weui-cell weui-cell_access\" href={:url(\"personal/sellbind\")}?id="+data[1][i].id+">";
-                    str+="<div class=\"weui-cell__bd\">";
-                    str+="<p>"+data[1][i].cus_name+"</p>";
-                    str+="</div>"
-                    str+="<div class=\"weui-cell__ft\">";
-                    str+="</div>";
-                    str+="</a>";
-                }
-                $("#pdiv").append(str);
-                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
-
-                $("#loading").css("display","none");//数据加载完隐藏加载提示
-            }else
-            {
-                str="<div class=\"page-hd\">";
-                str+="<h1 class=\"page-hd-title\">当前地区暂无用户</h1></div>";
-                $("#pdiv").html(str);
-                loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
-
-                $("#loading").css("display","none");//数据加载完隐藏加载提示
-            }
-
-        },'json')
-        page++;
-    }
-</script>
-{/case}
 {case 3}
 <script>
     //安装员选择客户

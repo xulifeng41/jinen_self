@@ -2,7 +2,8 @@
 namespace app\wechatmall\controller;
 use think\Controller;
 use think\Db;
-
+use app\wechatmall\model\MallWechatUser;
+use app\wechatmall\model\MallWechatQrcode;
 define("TOKEN", "xulifeng");
 
 class Index extends Controller
@@ -96,111 +97,159 @@ class Index extends Controller
         switch ($object->Event)
         {
             case "subscribe":
-//                $info = $weixin->get_user_info($openid);
-//                $municipalities = array("北京", "上海", "天津", "重庆", "香港", "澳门");
-//                $sexes = array("", "男", "女");
-//                $data = array();
-//                $data['openid'] = $openid;
-//                $data['nickname'] = str_replace("'", "", $info['nickname']);
-//                $data['sex'] = $sexes[$info['sex']];
-//                $data['country'] = $info['country'];
-//                $data['province'] = $info['province'];
-//                $data['city'] = (in_array($info['province'], $municipalities))?$info['province'] : $info['city'];
-//                $data['scene'] = (isset($object->EventKey) && (stripos(strval($object->EventKey),"qrscene_")))?str_replace("qrscene_","",$object->EventKey):"0";
-//
-//                $data['headimgurl'] = $info['headimgurl'];
-//                $data['subscribe'] = $info['subscribe_time'];
-//                $data['heartbeat'] = time();
-//                $data['remark'] = $info['remark'];
-//                $data['score'] = 1;
-//                $data['tagid'] = $info['tagid_list'];
-//                Db::name('user')->insert($data);
+                $wuser=new MallWechatUser;
+                $info = $weixin->get_user_info($openid);
+                $is_exist=$wuser->where('openid',$openid)->find();
+                $municipalities = array("北京", "上海", "天津", "重庆", "香港", "澳门");
+                $data = array();
+                $data['openid'] = $openid;
+                $data['sex'] = $info['sex'];
+                $data['province'] = $info['province'];
+                $data['subscribe'] = $info['subscribe'];
+                $data['nickname'] = str_replace("'", "", $info['nickname']);
+                $data['city'] = (in_array($info['province'], $municipalities))?$info['province'] : $info['city'];
+                $data['subscribe_time'] = date('Y-m-d H:i:s',$info['subscribe_time']);
+                $data['scene'] = (isset($object->EventKey) && (str_replace("qrscene_","",$object->EventKey)))?1:0;
+                $data['headimgurl'] = $info['headimgurl'];
+                if($data['scene'])
+                {
+                    $scene = str_replace("qrscene_","",$object->EventKey);
+                    $userinfo = $wuser->where('openid', $scene)->find();
+                    $data['second']=$userinfo->id;
+                    $data['first']=$userinfo->second;
+                }
+                if($is_exist)
+                {
+                    $result=MallWechatUser::get($is_exist->id);
+                    $data['update_time'] = date('Y-m-d H:i:s');
+                    $result->save($data);
+                }else
+                {
+                    $data['create_time'] = date('Y-m-d H:i:s');
+                    $wuser->save($data);
+                }
                 // $User->add($data, array(), true); // 根据条件更新记录
-
-                // $sexadj = array("1"=>"英俊的", "2"=>"漂亮的", "0"=>"");
-//                $content = "欢迎关注";
-                $sceneid = str_replace("qrscene_","",$object->EventKey);
-                $content = $sceneid;
-//                $data['popenid']=$sceneid;
-//                $data['openid']=$openid;
-//                $data['createtime']=date("Y-m-d H:i:s",time());
-//                file_put_contents('{"obj": "'.$object->EventKey.'", "data": '.json_encode($data).'}');
-//                 $weixin->send_custom_message($openid, "text", $content.time());
+                $content = "欢迎关注，".$info['nickname'];
 
                 break;
             case "unsubscribe":
-//                db('user')->where('openid',$openid)->delete();
-                // $User->where("`openid` = '".$openid."'")->delete();
+//                MallWechatUser::where('openid','=',$openid)->delete();
                 // $data['heartbeat'] = 0;
                 // $User->where("`openid` = '".$openid."'")->save($data); // 根据条件更新记录
                 break;
             case "CLICK":
                 switch ($object->EventKey)
                 {
-                    case "TEXT":
-//                        $content = "微笑：/::)\n乒乓：/:oo\n中国：".$this->bytes_to_emoji(0x1F1E8).$this->bytes_to_emoji(0x1F1F3)."\n仙人掌：".$this->bytes_to_emoji(0x1F335);
 
-                        break;
                     case "SINGLENEWS":
                         $content = array();
-                        $content[] = array("Title"=>"单图文标题",  "Description"=>"单图文内容", "PicUrl"=>"http://images2015.cnblogs.com/blog/340216/201605/340216-20160515215306820-740762359.jpg", "Url" =>"http://m.cnblogs.com/?u=txw1958");
+                        $content[] = array("Title"=>"单图文标题",  "Description"=>"单图文内容", "PicUrl"=>"", "Url" =>"");
                         break;
                     case "MULTINEWS":
                         $content = array();
-                        $content[] = array("Title"=>"多图文1标题", "Description"=>"", "PicUrl"=>"http://images2015.cnblogs.com/blog/340216/201605/340216-20160515215306820-740762359.jpg", "Url" =>"http://m.cnblogs.com/?u=txw1958");
-                        $content[] = array("Title"=>"多图文2标题", "Description"=>"", "PicUrl"=>"http://d.hiphotos.bdimg.com/wisegame/pic/item/f3529822720e0cf3ac9f1ada0846f21fbe09aaa3.jpg", "Url" =>"http://m.cnblogs.com/?u=txw1958");
-                        $content[] = array("Title"=>"多图文3标题", "Description"=>"", "PicUrl"=>"http://g.hiphotos.bdimg.com/wisegame/pic/item/18cb0a46f21fbe090d338acc6a600c338644adfd.jpg", "Url" =>"http://m.cnblogs.com/?u=txw1958");
+                        $content[] = array("Title"=>"多图文1标题", "Description"=>"", "PicUrl"=>"", "Url" =>"");
+                        $content[] = array("Title"=>"多图文2标题", "Description"=>"", "PicUrl"=>"", "Url" =>"");
+                        $content[] = array("Title"=>"多图文3标题", "Description"=>"", "PicUrl"=>"", "Url" =>"");
                         break;
                     case "MUSIC":
                         $content = array();
-                        $content = array("Title"=>"最炫民族风", "Description"=>"歌手：凤凰传奇", "MusicUrl"=>"http://mascot-music.stor.sinaapp.com/zxmzf.mp3", "HQMusicUrl"=>"http://mascot-music.stor.sinaapp.com/zxmzf.mp3");
+                        $content = array("Title"=>"", "Description"=>"", "MusicUrl"=>"", "HQMusicUrl"=>"");
                         break;
                     case "MYCODE":
                         $content = array();
-                        $content = array("MediaId"=>"4LxPT4jt2ZWXzFywQ9TQ-odFWV3rvV9mnA_YLdqriQn_o97dGnugxdAjkobXatGI");
+                        $wuser=new MallWechatUser();
+                        $result=$wuser->is_buy($openid);
+                        if($result==1)
+                        {
+                            $res=MallWechatQrcode::where('ticket', $openid)->find();
+                            if($res)
+                            {
+                                if($res['expiration_time']<=date('Y-m-d H:i:s',time()))
+                                {
+                                    //过期，生成
+                                    $weixin = new \weixin1\Wxapi();
+                                    $data=$weixin->get_qrcode($res['ticket']);
+                                    //没记录，更新
+
+                                    $params['id']=$res['id'];
+                                    $params['update_time']=date('Y-m-d H:i:s');
+                                    $params['expiration_time']=date('Y-m-d H:i:s',strtotime('+3 day'));
+                                    $params['media_id']=$data['media_id'];
+                                    MallWechatQrcode::update($params);
+                                    $content = array("MediaId"=>$data['media_id']);
+                                }else
+                                    {
+                                        $content = array("MediaId"=>$res['media_id']);
+                                    }
+                            }else
+                            {
+                                //没记录，生成
+                                $weixin = new \weixin1\Wxapi();
+                                $data=$weixin->get_qrcode($openid);
+                                $info = $wuser->where('openid', $openid)->find();
+                                $params['wuser_id']=$info->id;
+                                $params['ticket']=$openid;
+                                $params['qrcode_url']=$data['qrcode_url'];
+                                $params['create_time']=date('Y-m-d H:i:s');
+                                $params['expiration_time']=date('Y-m-d H:i:s',strtotime('+3 day'));
+                                $params['media_id']=$data['media_id'];
+                                MallWechatQrcode::create($params);
+                                $content = array("MediaId"=>$data['media_id']);
+                            }
+                        }elseif($result==2)
+                        {
+                            $content = '当前用户暂无此功能';
+                        }
                         break;
                     default:
                         $content = "点击菜单：".$object->EventKey;
                         break;
                 }
                 break;
-            case "VIEW":
-                $content = "跳转链接 ".$object->EventKey;
-                break;
+//            case "VIEW":
+//                $content = "跳转链接 ".$object->EventKey;
+//                break;
             case "SCAN":
-                $content = "扫描参数二维码，场景ID：".$object->EventKey;
-                break;
-            case "LOCATION":
-
-                $content = "上传位置：纬度 ".$object->Latitude.";经度 ".$object->Longitude;
-                $content = "";
-                break;
-            case "scancode_waitmsg":
-                if ($object->ScanCodeInfo->ScanType == "qrcode"){
-                    $content = "扫码带提示：类型 二维码 结果：".$object->ScanCodeInfo->ScanResult;
-                }else if ($object->ScanCodeInfo->ScanType == "barcode"){
-                    $codeinfo = explode(",",strval($object->ScanCodeInfo->ScanResult));
-                    $codeValue = $codeinfo[1];
-                    $content = "扫码带提示：类型 条形码 结果：".$codeValue;
-                }else{
-                    $content = "扫码带提示：类型 ".$object->ScanCodeInfo->ScanType." 结果：".$object->ScanCodeInfo->ScanResult;
+//                $content = "扫描参数二维码，场景ID：".$object->EventKey;
+                $wuser=new MallWechatUser();
+                $scene = (isset($object->EventKey) && (str_replace("qrscene_","",$object->EventKey)))?str_replace("qrscene_","",$object->EventKey):0;
+                if($scene)
+                {
+                    $info = $wuser->where('openid', $openid)->find();
+                    MallWechatQrcode::where('wuser_id','=',$info->id)->setInc('scan');
                 }
                 break;
-            case "scancode_push":
-                $content = "扫码推事件";
-                break;
-            case "pic_sysphoto":
-                $content = "系统拍照1";
-                break;
-            case "pic_weixin":
-                $content = "相册发图：数量 ".$object->SendPicsInfo->Count;
-                break;
-            case "pic_photo_or_album":
-                $content = "拍照或者相册：数量 ".$object->SendPicsInfo->Count;
-                break;
-            case "location_select":
-                $content = "发送位置：标签 ".$object->SendLocationInfo->Label;
-                break;
+//            case "LOCATION":
+//
+//                $content = "上传位置：纬度 ".$object->Latitude.";经度 ".$object->Longitude;
+//                $content = "";
+//                break;
+//            case "scancode_waitmsg":
+//                if ($object->ScanCodeInfo->ScanType == "qrcode"){
+//                    $content = "扫码带提示：类型 二维码 结果：".$object->ScanCodeInfo->ScanResult;
+//                }else if ($object->ScanCodeInfo->ScanType == "barcode"){
+//                    $codeinfo = explode(",",strval($object->ScanCodeInfo->ScanResult));
+//                    $codeValue = $codeinfo[1];
+//                    $content = "扫码带提示：类型 条形码 结果：".$codeValue;
+//                }else{
+//                    $content = "扫码带提示：类型 ".$object->ScanCodeInfo->ScanType." 结果：".$object->ScanCodeInfo->ScanResult;
+//                }
+//                break;
+//            case "scancode_push":
+//                $content = "扫码推事件";
+//                break;
+//            case "pic_sysphoto":
+//                $content = "系统拍照1";
+//                break;
+//            case "pic_weixin":
+//                $content = "相册发图：数量 ".$object->SendPicsInfo->Count;
+//                break;
+//            case "pic_photo_or_album":
+//                $content = "拍照或者相册：数量 ".$object->SendPicsInfo->Count;
+//                break;
+//            case "location_select":
+//                $content = "发送位置：标签 ".$object->SendLocationInfo->Label;
+//                break;
             default:
                 $content = "receive a new event: ".$object->Event;
                 break;
@@ -234,16 +283,18 @@ class Index extends Controller
         //自动回复模式
         else{
             if (strstr($keyword, "文本")){
-                $content = "这是个文本消息\n".$openid;
+//                $result=$wuser->is_buy($openid);
+//                file_put_contents('obj', '{"obj": "'.$result.'"}');
+//                $content = $result;
             }else if (strstr($keyword, "单图文")){
                 $content = array();
-                $content[] = array("Title"=>"单图文标题",  "Description"=>"单图文内容", "PicUrl"=>"http://files.cnblogs.com/files/txw1958/cartoon.gif", "Url" =>"http://m.cnblogs.com/?u=txw1958");
+                $content[] = array("Title"=>"单图文标题",  "Description"=>"单图文内容", "PicUrl"=>"", "Url" =>"");
                 $weixin = new \weixin1\Wxapi();
                 $template = array('touser' => $openid,
                     'template_id' => "_yFpVtfHd0pSWy6ffApi6isjY8HmmWC8aKW-Uqz8viU",
-                    'url' => "http://www.baidu.com/",
+                    'url' => "",
                     'topcolor' => "#0000C6",
-                    'data' => array('content'    => array('value' => "你妈妈\\n喊你\\n回家吃饭了！",
+                    'data' => array('content'    => array('value' => "123",
                         'color' => "#743A3A",
                     ),
                     )
@@ -251,16 +302,16 @@ class Index extends Controller
                 $weixin->send_template_message($template);
             }else if (strstr($keyword, "图文") || strstr($keyword, "多图文")){
                 $content = array();
-                $content[] = array("Title"=>"多图文1标题", "Description"=>"", "PicUrl"=>"http://files.cnblogs.com/files/txw1958/cartoon.gif", "Url" =>"http://m.cnblogs.com/?u=txw1958");
-                $content[] = array("Title"=>"多图文2标题", "Description"=>"", "PicUrl"=>"http://d.hiphotos.bdimg.com/wisegame/pic/item/f3529822720e0cf3ac9f1ada0846f21fbe09aaa3.jpg", "Url" =>"http://m.cnblogs.com/?u=txw1958");
-                $content[] = array("Title"=>"多图文3标题", "Description"=>"", "PicUrl"=>"http://g.hiphotos.bdimg.com/wisegame/pic/item/18cb0a46f21fbe090d338acc6a600c338644adfd.jpg", "Url" =>"http://m.cnblogs.com/?u=txw1958");
+                $content[] = array("Title"=>"多图文1标题", "Description"=>"", "PicUrl"=>"", "Url" =>"");
+                $content[] = array("Title"=>"多图文2标题", "Description"=>"", "PicUrl"=>"", "Url" =>"");
+                $content[] = array("Title"=>"多图文3标题", "Description"=>"", "PicUrl"=>"", "Url" =>"");
 
             }else if (strstr($keyword, "音乐")){
                 $content = array();
-                $content = array("Title"=>"最炫民族风", "Description"=>"歌手：凤凰传奇", "MusicUrl"=>"http://121.199.4.61/music/zxmzf.mp3", "HQMusicUrl"=>"http://121.199.4.61/music/zxmzf.mp3");
+                $content = array("Title"=>"", "Description"=>"", "MusicUrl"=>"", "HQMusicUrl"=>"");
             }else{
                 // 可以接入机器人
-                $content = '你好,未识别关键字1';
+                $content = '你好,未识别关键字';
             }
 
             if(is_array($content)){

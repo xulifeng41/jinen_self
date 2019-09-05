@@ -7,12 +7,15 @@
  */
 
 namespace app\wechat\controller;
+
 use app\common\model\Company;
+use app\common\model\DevicePowers;
 use app\wechat\model\Person;
 use think\Db;
 use think\Request;
 use think\facade\Session;
 use aliyun\SendSms;
+use \GatewayWorker\Lib\Gateway;
 ini_set("error_reporting","E_ALL & ~E_NOTICE");
 class Personal extends Base
 {
@@ -38,6 +41,7 @@ class Personal extends Base
                 $company_info=Db::table("company")->where('id',$company_id)->find();
                 Session::set('appid',$company_info['appid']);
                 Session::set('appsecret',$company_info['appsecret']);
+                Session::set('company_id',$company_id);
             }
             $weixin = new \weixin\Wxapi(Session::get('appid'),Session::get('appsecret'),$company_id);
             # 第一次获取code
@@ -55,6 +59,7 @@ class Personal extends Base
                 {
                     Session::delete('appid');
                     Session::delete('appsecret');
+                    Session::delete('company_id');
                     # 库中有信息
                     Session::set('user_id',$role['id']);
                     $this->assign(
@@ -93,11 +98,14 @@ class Personal extends Base
             }elseif($info['role']==3)
             {
                 $means=Db::table("devices")->where('installer',$user_id)->find();
-            }else
+            }elseif($info['role']==4)
             {
                 $area=$info['area'];
-//                $means=Db::table("customers")->where('area',$area)->where('role',1)->find();
                 $means=Db::table("devices")->where('area',$area)->where('env_show',1)->find();
+            }elseif($info['role']==5)
+            {
+                $area=$info['area'];
+                $means=Db::table("devices")->where('area',$area)->find();
             }
             $this->assign([
                 'role' => $info,
@@ -114,6 +122,7 @@ class Personal extends Base
                 $company_info=Db::table("company")->where('id',$company_id)->find();
                 Session::set('appid',$company_info['appid']);
                 Session::set('appsecret',$company_info['appsecret']);
+                Session::set('company_id',$company_id);
             }
             $weixin = new \weixin\Wxapi(Session::get('appid'),Session::get('appsecret'),$company_id);
             # 第一次获取code
@@ -131,6 +140,7 @@ class Personal extends Base
                 {
                     Session::delete('appid');
                     Session::delete('appsecret');
+                    Session::delete('company_id');
                     # 库中有信息
                     Session::set('user_id',$role['id']);
                     if($role['role']==1)
@@ -143,11 +153,14 @@ class Personal extends Base
                     }elseif($role['role']==3)
                     {
                         $means=Db::table("devices")->where('installer',$role['id'])->find();
-                    }else
+                    }elseif($role['role']==4)
                     {
                         $area=$role['area'];
                         $means=Db::table("devices")->where('area',$area)->where('env_show',1)->find();
-//                        $means=Db::table("customers")->where('area',$area)->where('role',1)->find();
+                    }elseif($role['role']==5)
+                    {
+                        $area=$role['area'];
+                        $means=Db::table("devices")->where('area',$area)->find();
                     }
                     $this->assign([
                         'role' => $role,
@@ -178,16 +191,22 @@ class Personal extends Base
                 case 1:
                     $means=Db::table("devices")->where('customer_id',$user_id)->count();
                     # 每页显示的数据条数
-                    $rev='10';
+                    $rev='5';
                     # 获取最大页
                     $max=ceil($means/$rev);
-                    # 获取page参数
-                    $page=$datas['page'];
-                    # 判断
-                    if(empty($page)){
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
                         $page=1;
+                    }else
+                    {
+                        # 获取page参数
+                        $page=$datas['page'];
+                        # 判断
+                        if(empty($page)){
+                            $page=2;
+                        }
                     }
-                    $result=Db::view('devices', 'install_time,installer,id,version')
+                    $result=Db::view('devices', 'install_time,installer,id,version,sensor_type')
                         ->view('device_versions', 'version_name','device_versions.id=devices.version','LEFT')
                         ->view(['region' => 'a'], ['name' => 'aname'], 'devices.province=a.id','LEFT')
                         ->view(['region' => 'b'], ['name' => 'bname'], 'devices.city=b.id','LEFT')
@@ -196,7 +215,14 @@ class Personal extends Base
                         ->order('devices.install_time', 'desc')
                         ->page($page,$rev)
                         ->select();
-                    $results['maxpage']=$max;
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        $results['maxpage']=1;
+                    }else
+                    {
+                        $results['maxpage']=$max;
+
+                    }
                     $results['idd']=$user_id;
                     $results[1]=$result;
                     echo json_encode($results);
@@ -206,12 +232,18 @@ class Personal extends Base
                     # 每页显示的数据条数
                     $rev='3';
                     # 获取最大页
-                    $max=ceil($means/$rev);
-                    # 获取page参数
-                    $page=$datas['page'];
-                    # 判断
-                    if(empty($page)){
+                    $max=ceil(($means-$rev)/$rev);
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
                         $page=1;
+                    }else
+                    {
+                        # 获取page参数
+                        $page=$datas['page'];
+                        # 判断
+                        if(empty($page)){
+                            $page=2;
+                        }
                     }
                     $result=Db::view('customers', ['id','cus_name','phone','detail_address' => 'address'])
                         ->view(['region' => 'a'], ['name' => 'aname'], 'customers.province=a.id','LEFT')
@@ -221,51 +253,102 @@ class Personal extends Base
                         ->page($page,$rev)
                         ->select();
 
-                    $results['maxpage']=$max;
-                    $results[1]=$result;
-                    echo json_encode($results);
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        echo json_encode($result);
+                    }else
+                    {
+                        $results['maxpage']=$max;
+                        $results[1]=$result;
+                        echo json_encode($results);
+                    }
                     break;
                 case 3:
-                    $means=Db::table("devices")->where('installer',$user_id)->count();
-                    # 每页显示的数据条数
-                    $rev='3';
-                    # 获取最大页
-                    $max=ceil($means/$rev);
-                    # 获取page参数
-                    $page=$datas['page'];
-                    # 判断
-                    if(empty($page)){
-                        $page=1;
+                    $where[] = ['devices.installer','=',$user_id];
+                    if($datas['shop_name'])
+                    {
+                        $where[] = ['customers.shop_name','like','%'.$datas['shop_name'].'%'];
+                    }else
+                    {
+                        $where[] = [1,'=',1];
+                        $means=Db::table("devices")->where('installer',$user_id)->group('customer_id')->count();
                     }
-                    $result=Db::view('devices', 'id,install_time,installer,version,device_code')
-                        ->view('customers', ['cus_name', 'detail_address' => 'address'],'devices.customer_id=customers.id','LEFT')
-                        ->view('device_versions', 'version_name','device_versions.id=devices.version','LEFT')
-                        ->view(['region' => 'a'], ['name' => 'aname'], 'devices.province=a.id','LEFT')
-                        ->view(['region' => 'b'], ['name' => 'bname'], 'devices.city=b.id','LEFT')
-                        ->view(['region' => 'c'], ['name' => 'cname'], 'devices.area=c.id','LEFT')
-                        ->where('devices.installer', '=', $user_id)
-                        ->order('devices.install_time', 'desc')
-                        ->page($page,$rev)
-                        ->select();
+                    # 每页显示的数据条数
+                    $rev='15';
+                    # 获取最大页
+                    $max=ceil(($means-$rev)/$rev);
 
-                    $results['maxpage']=$max;
-                    $results[1]=$result;
-                    echo json_encode($results);
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        $page=1;
+                    }else
+                    {
+                        # 获取page参数
+                        $page=$datas['page'];
+                        # 判断
+                        if(empty($page)){
+                            $page=2;
+                        }
+                    }
+                    if($datas['shop_name'])
+                    {
+
+                        $result=Db::view('customers', ['id','detail_address' => 'address','shop_name'])
+                            ->view('devices', ['id' => 'did'], 'customers.id=devices.customer_id','LEFT')
+                            ->view(['region' => 'a'], ['name' => 'aname'], 'customers.province=a.id','LEFT')
+                            ->view(['region' => 'b'], ['name' => 'bname'], 'customers.city=b.id','LEFT')
+                            ->view(['region' => 'c'], ['name' => 'cname'], 'customers.area=c.id','LEFT')
+                            ->where([
+                                $where
+                            ])
+                            ->group('devices.customer_id')
+                            ->select();
+                    }else
+                        {
+
+                            $result=Db::view('customers', ['id','detail_address' => 'address','shop_name'])
+                                ->view('devices', ['id' => 'did'], 'customers.id=devices.customer_id','LEFT')
+                                ->view(['region' => 'a'], ['name' => 'aname'], 'customers.province=a.id','LEFT')
+                                ->view(['region' => 'b'], ['name' => 'bname'], 'customers.city=b.id','LEFT')
+                                ->view(['region' => 'c'], ['name' => 'cname'], 'customers.area=c.id','LEFT')
+                                ->where([
+                                    $where
+                                ])
+                                ->group('devices.customer_id')
+                                ->page($page,$rev)
+                                ->select();
+                        }
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        echo json_encode($result);
+                    }else
+                    {
+                        $results['maxpage']=$max;
+                        $results[1]=$result;
+                        echo json_encode($results);
+                    }
                     break;
                 case 4:
                     $area=Person::area($user_id);
                     $means=Db::table("devices")->where('area',$area)->where('env_show',1)->count();
                     # 每页显示的数据条数
                     $rev='3';
-//                    # 获取最大页
-                    $max=ceil($means/$rev);
-//                    # 获取page参数
-                    $page=$datas['page'];
-//                    # 判断
-                    if(empty($page)){
+                    # 获取最大页
+                    $max=ceil(($means-$rev)/$rev);
+
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
                         $page=1;
-                    }
-                    $result=Db::view('devices', 'install_time,installer,id,version,status')
+                    }else
+                        {
+                            # 获取page参数
+                            $page=$datas['page'];
+                            # 判断
+                            if(empty($page)){
+                                $page=2;
+                            }
+                        }
+                    $result=Db::view('devices', 'install_time,installer,id,version,status,sensor_type,is_mine')
                         ->view('customers', 'shop_name,detail_address','devices.customer_id=customers.id')
                         ->view('device_versions', 'version_name','device_versions.id=devices.version','LEFT')
                         ->view(['region' => 'a'], ['name' => 'aname'], 'devices.province=a.id','LEFT')
@@ -276,15 +359,165 @@ class Personal extends Base
                         ->order('devices.install_time', 'desc')
                         ->page($page,$rev)
                         ->select();
-
-                    $results['maxpage']=$max;
-                    $results[1]=$result;
-                    echo json_encode($results);
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        echo json_encode($result);
+                    }else
+                        {
+                            $results['maxpage']=$max;
+                            $results[1]=$result;
+                            echo json_encode($results);
+                        }
+                    break;
+                case 5:
+                    $area=Person::area($user_id);
+                    $means=Db::table("devices")->where('area',$area)->count();
+                    # 每页显示的数据条数
+                    $rev='3';
+                    # 获取最大页
+                    $max=ceil(($means-$rev)/$rev);
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        echo $page=1;
+                    }else
+                    {
+                        # 获取page参数
+                        $page=$datas['page'];
+                        # 判断
+                        if(empty($page)){
+                            $page=2;
+                        }
+                    }
+                    $result=Db::view('devices', 'install_time,installer,id,version,status,sensor_type,is_mine')
+                        ->view('customers', 'shop_name,detail_address','devices.customer_id=customers.id')
+                        ->view('device_versions', 'version_name','device_versions.id=devices.version','LEFT')
+                        ->view(['region' => 'a'], ['name' => 'aname'], 'devices.province=a.id','LEFT')
+                        ->view(['region' => 'b'], ['name' => 'bname'], 'devices.city=b.id','LEFT')
+                        ->view(['region' => 'c'], ['name' => 'cname'], 'devices.area=c.id','LEFT')
+                        ->where('devices.area', '=', $area)
+                        ->order('devices.install_time', 'desc')
+                        ->page($page,$rev)
+                        ->select();
+                    if(isset($datas['type'])&&$datas['type']==1)
+                    {
+                        echo json_encode($result);
+                    }else
+                    {
+                        $results['maxpage']=$max;
+                        $results[1]=$result;
+                        echo json_encode($results);
+                    }
                     break;
             }
         }
     }
+    #
+    public function inster(Request $request)
+    {
+        $user_id=$request->param('id');
+        $this->assign('id',$user_id);
+        return $this->fetch();
+    }
+    #
+    public function inster_ajax(Request $request)
+    {
+        if($request->isAjax())
+        {
+            $datas = $request->param();
+            $user_id=$datas['id'];
+            $means=Db::table("devices")->where('customer_id',$user_id)->count();
+            # 每页显示的数据条数
+            $rev='3';
+            # 获取最大页
+            $max=ceil(($means-$rev)/$rev);
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
+                $page=1;
+            }else
+            {
+                # 获取page参数
+                $page=$datas['page'];
+                # 判断
+                if(empty($page)){
+                    $page=2;
+                }
+            }
+            $result=Db::view('devices', 'id,install_time,installer,version,device_code,is_mine,sensor_type')
+                ->view('customers', ['cus_name', 'detail_address' => 'address'],'devices.customer_id=customers.id','LEFT')
+                ->view('device_versions', 'version_name','device_versions.id=devices.version','LEFT')
+                ->view(['region' => 'a'], ['name' => 'aname'], 'devices.province=a.id','LEFT')
+                ->view(['region' => 'b'], ['name' => 'bname'], 'devices.city=b.id','LEFT')
+                ->view(['region' => 'c'], ['name' => 'cname'], 'devices.area=c.id','LEFT')
+                ->where('customers.id', '=', $user_id)
+                ->order('devices.install_time', 'desc')
+                ->page($page,$rev)
+                ->select();
 
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
+                echo json_encode($result);
+            }else
+            {
+                $results['maxpage']=$max;
+                $results[1]=$result;
+                echo json_encode($results);
+            }
+        }
+    }
+    #
+    public function sell_device(Request $request)
+    {
+        $user_id=Session::get('user_id');
+        $this->assign('id',$user_id);
+        return $this->fetch();
+    }
+    #
+    public function sell_dajax(Request $request)
+    {
+        if($request->isAjax())
+        {
+            $datas=$request->param();
+            $area=Person::area($datas['id']);
+            $means=Db::table("devices")->where('area',$area)->where('env_show',1)->count();
+            # 每页显示的数据条数
+            $rev='3';
+                    # 获取最大页
+            $max=ceil(($means-$rev)/$rev);
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
+                $page=1;
+            }else
+            {
+                # 获取page参数
+                $page=$datas['page'];
+                # 判断
+                if(empty($page)){
+                    $page=2;
+                }
+            }
+            $result=Db::view('devices', 'install_time,installer,id,version,status,sensor_type,is_mine')
+                ->view('customers', 'shop_name,detail_address','devices.customer_id=customers.id')
+                ->view('device_versions', 'version_name','device_versions.id=devices.version','LEFT')
+                ->view(['region' => 'a'], ['name' => 'aname'], 'devices.province=a.id','LEFT')
+                ->view(['region' => 'b'], ['name' => 'bname'], 'devices.city=b.id','LEFT')
+                ->view(['region' => 'c'], ['name' => 'cname'], 'devices.area=c.id','LEFT')
+                ->where('devices.area', '=', $area)
+                ->where('devices.env_show', '=', 1)
+                ->order('devices.install_time', 'desc')
+                ->page($page,$rev)
+                ->select();
+
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
+                echo json_encode($result);
+            }else
+            {
+                $results['maxpage']=$max;
+                $results[1]=$result;
+                echo json_encode($results);
+            }
+        }
+    }
     #
     public function add()
     {
@@ -292,25 +525,6 @@ class Personal extends Base
         $info=Person::where('id',$user_id)->find();
         switch($info['role'])
         {
-            case 1:
-                # 显示客户地址
-                $cusinfos=Db::view('customers')
-                    ->view(['region' => 'a'], ['name' => 'aname'], 'customers.province=a.id','LEFT')
-                    ->view(['region' => 'b'], ['name' => 'bname'], 'customers.city=b.id','LEFT')
-                    ->view(['region' => 'c'], ['name' => 'cname'], 'customers.area=c.id','LEFT')
-                    ->where('customers.id', '=', $user_id)
-                    ->select();
-                $infos['address']=$cusinfos[0]['aname'].$cusinfos[0]['bname'].$cusinfos[0]['cname'];
-                $this->assign([
-                    'info' => $info,
-                    'infos' => $infos,
-                ]);
-                break;
-            case 2:
-                $this->assign([
-                    'info' => $info
-                ]);
-                break;
             case 3:
                 $version=Db::table('device_versions')
                     ->field(['id','version_name'])
@@ -328,8 +542,8 @@ class Personal extends Base
                     'version'=>$result,
                 ]);
                 break;
-            case 4:
-                # 角色4
+            default:
+                #
                 $cusinfos=Db::view('customers')
                     ->view(['region' => 'a'], ['name' => 'aname'], 'customers.province=a.id','LEFT')
                     ->view(['region' => 'b'], ['name' => 'bname'], 'customers.city=b.id','LEFT')
@@ -352,38 +566,68 @@ class Personal extends Base
         {
             $datas=$request->param();
             $user_id = Session::get('user_id');
+            $where[] = ['a.id','=',$user_id];
+            $where[] = ['b.role','=',1];
+            if($datas['phone'])
+            {
+                $where[] = ['b.phone','=',$datas['phone']];
+            }else
+            {
+                $where[] = [1,'=',1];
+            }
             $cusinfos=Db::view(['customers' => 'a'],'role')
                 ->view(['customers' => 'b'],('id,cus_name'), 'a.area=b.area')
-                ->where('a.id', '=', $user_id)
+                ->where([
+                    $where
+                ])
                 ->where('b.salesman', '=', null)
-                ->where('b.role', '=', 1)
                 ->count();
 
             # 每页显示的数据条数
-            $rev='10';
+            $rev=$datas['phone']?'1':'15';
             # 获取最大页
-            $max=ceil($cusinfos/$rev);
-            # 获取page参数
-            $page=$datas['page'];
-            # 判断
-            if(empty($page)){
+            $max=ceil(($cusinfos-$rev)/$rev);
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
                 $page=1;
+            }else
+            {
+                # 获取page参数
+                $page=$datas['phone']?'1':$datas['page'];
+                # 判断
+                if(empty($page)){
+                    $page=2;
+                }
             }
             $result=Db::view(['customers' => 'a'],'role')
                 ->view(['customers' => 'b'],('id,cus_name'), 'a.area=b.area')
-                ->where('a.id', '=', $user_id)
+                ->where([
+                    $where
+                ])
                 ->where('b.salesman', '=', null)
-                ->where('b.role', '=', 1)
                 ->page($page,$rev)
                 ->select();
 
-            $results['maxpage']=$max;
-            $results[1]=$result;
-            echo json_encode($results);
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
+                echo json_encode($result);
+            }else
+            {
+                $results['maxpage']=$max;
+                $results[1]=$result;
+                echo json_encode($results);
+            }
         }
     }
+    #
+    public function sell_cus()
+    {
+        $user_id=Session::get('user_id');
+        $this->assign('id',$user_id);
+        return $this->fetch();
+    }
     # 业务员选择页面
-        public function sellbind(Request $request)
+    public function sellbind(Request $request)
     {
         $datas=$request->param();
         $info=Person::where('id',$datas['id'])->find();
@@ -400,30 +644,7 @@ class Personal extends Base
         ]);
         return $this->fetch('sellbind');
     }
-        # 业务员页面搜索
-        public function searchajax(Request $request)
-    {
-        if($request->isAjax()) {
-            $phone = $request->param('phone');
-            $id = $request->param('id');
-            $cusinfos=Db::view(['customers' => 'a'],'role')
-                ->view(['customers' => 'b'],('id'), 'a.area=b.area')
-                ->where('a.id', '=', $id)
-                ->where('b.salesman', '=', null)
-                ->where('b.role', '=', 1)
-                ->where('b.phone', '=', $phone)
-                ->select();
-            if($cusinfos)
-            {
-                $result['code']='200';
-            }else
-            {
-                $result['code']='201';
-                $result['msg']='当前地区无此选用户';
-            }
-            echo json_encode($result);
-        }
-    }
+
     # 安装员判断设备码
     public function dcodeajax(Request $request)
     {
@@ -586,6 +807,10 @@ class Personal extends Base
                         $data['openid']=$datas['openid'];
                         $data['phone']=$datas['phone'];
                         $data['token']=Db::raw("REPLACE(UUID(),'-','')");
+                        $rand = rand(1000,9999);
+                        $data['salt'] = $rand;
+                        $data['password']=md5(md5(123456).$rand);
+                        $data['wechat_id']=Session::get('company_id');
                         $result = Db::name('customers')->insertGetId($data);
                         if($result)
                         {
@@ -744,6 +969,90 @@ class Personal extends Base
             ]);
         return $this->fetch('device');
     }
+
+    /* 设备的工作状况
+     * */
+    public function working_condition(Request $request,DevicePowers $devicePowers){
+        $device_id = $request->param('id');
+        if ($request->isAjax()){
+            if ($request->isGet()){
+                //请求数据库，这个设备的所有电源状态
+                $powers = $devicePowers->where(['device_id' => $device_id])->all();
+                if ($powers->isEmpty()){
+                    return ['code' => 201];
+                }else{
+                    foreach($powers as $key=>$val){
+                        $powers[$key]['high_voltage']=intval($val->high_voltage)*1000;
+                    }
+                    return ['code' => 200, 'data' => $powers];
+                }
+            }else{
+                //先判断是否在线
+                Gateway::$registerAddress = '127.0.0.1:1238';
+                if (Gateway::isUidOnline($device_id)){
+                //调整电源电压
+                $type = $request->param('type');
+                $power_num = $request->param('power_num');
+                if ($request->param('switch_type')=='c_opower'){
+                    //关闭开启电源
+                    if ($type=='on'){
+                        //开启电源
+                        $str1 = substr_replace('01050000FF00',$power_num,1,1);
+                    }else{
+                        $str1 = substr_replace('010500000000',$power_num,1,1);
+                    }
+                    $str2 = $this->crc16($str1);
+                    //发送命令
+                    $str2 = $str1.strtoupper($str2);
+                }elseif($request->param('switch_type')=='i_dpower')
+                {
+                    //调整电压前要看看电源是否是手动状态
+                    $power = $devicePowers->where(['device_id' => $device_id, 'power_num' => $power_num])->find();
+                    if ($power['is_manual']!=1){
+                        return ['code' => 201, 'msg' => '电源必须在手动模式下才能调整'];
+                    }
+                    //调整电源电压
+                    if ($type=='dec'){
+                        //01050002FF00调整电源电压命令，第二位是电源号
+                        $str1 = substr_replace('01050002FF00',$power_num,1,1);
+                    }else{
+                        $str1 = substr_replace('01050001FF00',$power_num,1,1);
+                    }
+                    $str2 = $this->crc16($str1);
+                    //发送命令
+                    $str2 = $str1.strtoupper($str2);
+                } else{
+                    //手自动调整
+                    if ($type==1){
+                        //手动模式
+                        $str1 = substr_replace('01050003FF00',$power_num,1,1);
+                    }else{
+                        //自动模式
+                        $str1 = substr_replace('010500030000',$power_num,1,1);
+                    }
+                }
+                    Gateway::sendToUid($device_id,hex2bin(preg_replace('# #','', $str2)));
+                return ['code' => 200, 'msg' => '操作命令已发出！'];
+                }else{
+                    return ['code' => 201, 'msg' => '当前设备不在线，无法调整'];
+                }
+            }
+        }else{
+            //发送指令，单片机可以循环给服务器发送电源信息
+            //Gateway::$registerAddress = '127.0.0.1:1238';
+            //Gateway::sendToUid($device_id,hex2bin(preg_replace('# #','', '01 05 00 70 FF 00 8D E1')));
+            $powers = $devicePowers->where(['device_id' => $device_id])->all();
+            foreach($powers as $key=>$val){
+                $powers[$key]['high_voltage']=intval($val->high_voltage)*1000;
+            }
+            $user=Person::get(Session::get('user_id'));
+            $this->assign('id',$device_id);
+            $this->assign('powers',$powers);
+            $this->assign('user',$user);
+            return $this->fetch();
+        }
+    }
+
     # 图表页面根据设备id判断数据
     public function jianceajax(Request $request)
     {
@@ -853,7 +1162,6 @@ class Personal extends Base
             $data=$request->param('values');
             $data['reason']=$data['reason'];
             $data['phone']=$data['phone'];
-            $data['create_time']=date("Y-m-d H:i:s",time());
             $data['costomer_id'] = Session::get('user_id');
             $info=Db::table("devices")->where('customer_id',$data['costomer_id'])->select();
             if($info)
@@ -897,19 +1205,31 @@ class Personal extends Base
             $info=Db::table('repairs')->field('id,reason,progress,create_time')->where('costomer_id',$user_id)->order('create_time','desc')->count();
 
             # 每页显示的数据条数
-            $rev='2';
+            $rev='5';
             # 获取最大页
             $max=ceil($info/$rev);
-            # 获取page参数
-            $page=$datas['page'];
-            # 判断
-            if(empty($page)){
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
                 $page=1;
+            }else
+            {
+                # 获取page参数
+                $page=$datas['page'];
+                # 判断
+                if(empty($page)){
+                    $page=2;
+                }
             }
             $result=Db::table('repairs')->field('id,reason,progress,create_time')->where('costomer_id',$user_id)->order('create_time','desc')->page($page,$rev)->select();
-            $results['maxpage']=$max;
-            $results[1]=$result;
-            echo json_encode($results);
+            if(isset($datas['type'])&&$datas['type']==1)
+            {
+                echo json_encode($result);
+            }else
+            {
+                $results['maxpage']=$max;
+                $results[1]=$result;
+                echo json_encode($results);
+            }
         }
     }
     # 进度
@@ -944,6 +1264,23 @@ class Personal extends Base
                 'info' => $data
             ]);
         return $this->fetch('progress');
+    }
+
+    /*crc16校验码*/
+    private function crc16($string){
+        $string = pack('H*', $string);
+        $crc = 0xFFFF;
+        for ($x = 0; $x < strlen ($string); $x++) {
+            $crc = $crc ^ ord($string[$x]);
+            for ($y = 0; $y < 8; $y++) {
+                if (($crc & 0x0001) == 0x0001) {
+                    $crc = (($crc >> 1) ^ 0xA001);
+                } else {
+                    $crc = $crc >> 1;
+                }
+            }
+        }
+        return sprintf('%02x%02x', $crc%256, floor($crc/256));
     }
 
 }

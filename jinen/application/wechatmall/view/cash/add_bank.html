@@ -1,0 +1,112 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px">
+
+    <div class="weui-cells weui-cells_form">
+        <form action='' method="post" id="form">
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">银行:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="请输入银行" name="bank_code" id="bank_code">
+            </div>
+        </div>
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">银行卡号:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="请输入银行卡号" name="account" id="account" pattern="[0-9]*" type="number">
+            </div>
+        </div>
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">确认卡号:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="银行卡号" id="reaccount" pattern="[0-9]*" type="number">
+            </div>
+        </div>
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">账户姓名:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="请输入账户姓名" name="real_name" id="real_name">
+            </div>
+        </div>
+        <div class="page-bd-15" style="padding:3px;margin-top: 2em;">
+            <button type="button" value="" class="weui-btn weui-btn_primary bg-blue" id="btn" style="margin-right: 1.5em;">+确认添加</button>
+        </div>
+    </form>
+    </div>
+
+    <script>
+        $(function(){
+            $(document).on("click","#btn",function(){
+                var form_datas = $('#form').serializeArray();
+                var can = {};
+                form_datas.forEach(function(value,index){
+                    can[value.name] = value.value;
+                })
+                if(can.bank_code==""){
+                    $.toptip('请填写银行', 'error');
+                    $("#btn").attr("disabled","disabled");
+                    $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }
+                if(can.account==""){
+                    $.toptip('请填写银行卡号', 'error');
+                    $("#btn").attr("disabled","disabled");
+                    $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }
+                if(can.real_name==""){
+                    $.toptip('请填写账户姓名', 'error');
+                    $("#btn").attr("disabled","disabled");
+                    $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }
+                var reaccount=$("#reaccount").val();
+                if(can.account!=reaccount)
+                {
+                    $.toptip("两次输入的银卡卡号不同", 'error');
+                    $("#btn").attr("disabled","disabled");
+                    $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                    return false;
+                }
+                //提交
+                $.post('{:url("cash/bank_ajax")}',can,function(data)
+                {
+                    if(data.code==200){
+                        $.toptip(data.msg,'success');
+                        setTimeout(function () {
+                            window.location.href = '{:url("user/index")}';
+                        },800)
+                    }else
+                    {
+                        $.toptip(data.msg,'error');
+                        return false;
+                    }
+                },'json');
+            })
+        });
+        $(function(){
+            $(document).on("focus","#bank_code",function(){
+                $("#btn").removeAttr("disabled");
+                $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+            })
+        });
+        $(function(){
+            $(document).on("focus","#account",function(){
+                $("#btn").removeAttr("disabled");
+                $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+            })
+        });
+        $(function(){
+            $(document).on("focus","#reaccount",function(){
+                $("#btn").removeAttr("disabled");
+                $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+            })
+        });
+        $(function(){
+            $(document).on("focus","#real_name",function(){
+                $("#btn").removeAttr("disabled");
+                $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+            })
+        });
+    </script>
+{include file='layout/footer2' /}

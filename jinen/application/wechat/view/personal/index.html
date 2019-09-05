@@ -53,20 +53,15 @@
                         <p>我安装的设备</p>
                     </div>
                         {/case}
-                        {case 4 }<div class="weui-cell__bd weui-cell_primary">
+                        {default }<div class="weui-cell__bd weui-cell_primary">
                         <p>区域下的设备</p>
                     </div>
-                        {/case}
                         {/switch}
                         <span class="weui-cell__ft"></span>
                     </a>
                     <a class="weui-cell weui-cell_access" href={:url("personal/add")}>
                         <div class="weui-cell__hd"><img src="/static/images/img/3.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
                         {switch $role.role}
-                        {case 2 }<div class="weui-cell__bd weui-cell_primary">
-                        <p>添加客户</p>
-                    </div>
-                        {/case}
                         {case 3 }<div class="weui-cell__bd weui-cell_primary">
                         <p>安装设备</p>
                     </div>
@@ -93,6 +88,23 @@
                         </div>
                         <span class="weui-cell__ft"></span>
                     </a>
+                    {/case}
+                    {case 2 }
+                    <a class="weui-cell weui-cell_access" href={:url("personal/sell_cus")}>
+                        <div class="weui-cell__hd"><img src="/static/images/img/2.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>添加客户</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+                    <a class="weui-cell weui-cell_access" href={:url("personal/sell_device")}>
+                        <div class="weui-cell__hd"><img src="/static/images/img/4.png" alt="" style="width:20px;margin-right:5px;display:block"></div>
+                        <div class="weui-cell__bd weui-cell_primary">
+                            <p>区域下的设备</p>
+                        </div>
+                        <span class="weui-cell__ft"></span>
+                    </a>
+
                     {/case}
                     {/switch}
                 </div>

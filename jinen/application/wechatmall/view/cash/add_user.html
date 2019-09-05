@@ -1,0 +1,166 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px">
+    <div class="weui-cells weui-cells_form">
+    <form action='' method="post" id="form">
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">手机号:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" pattern="[0-9]*" placeholder="请输入手机号" type="number" name="phone" id="phone">
+            </div>
+        </div>
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">密码:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="请填写密码" name="password" id="password">
+            </div>
+        </div>
+        <div class="weui-cell border  w border-radius  w">
+            <div class="weui-cell__hd"><label class="weui-label">确认密码:</label></div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="请确认密码" id="repassword">
+            </div>
+        </div>
+        <div class="weui-cell weui-cell_vcode border  w border-radius  w">
+            <div class="weui-cell__hd">
+                <label class="weui-label">验证码</label>
+            </div>
+            <div class="weui-cell__bd">
+                <input class="weui-input" placeholder="验证码" type="number" name="code" id="code">
+            </div>
+            <div class="weui-cell__ft">
+                <button  class="weui-vcode-btn" onclick="settime(this)" type="button">获取验证码</button>
+            </div>
+        </div>
+        <div class="page-bd-15" style="padding:3px;margin-top: 2em">
+            <button type="button" value="" class="weui-btn weui-btn_primary bg-blue" id="btn" style="margin-right: 1.5em;">+确认添加</button>
+        </div>
+    </form>
+</div>
+
+</body>
+<script>
+    var countdown=60;
+    //验证码定时器
+    function settime(obj) {
+        var phone = $("#phone").val();
+        var myreg = /^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$/;
+
+        if(!myreg.test(phone))
+        {
+            $.toptip("请填写有效的手机号码！");
+            $("#btn1").attr("disabled","disabled");
+            $("#btn1").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+            return false;
+        }
+
+        var code = $(obj);
+        if (countdown == 0) {
+            code.removeAttr('disabled');
+            code.text("获取验证码");
+            countdown =60;
+            return;
+        }else if(countdown == 57)
+        {
+            code.text("重新发送(" + countdown + ")");
+            code.attr('disabled',true);
+            countdown--;
+            $.post('{:url("cash/sms")}',{phone:phone},function(data)
+            {
+                if(data.code==200){
+                    $.toptip(data.msg,'success');
+                }else
+                {
+                    $.toptip(data.msg);
+                    return false;
+                }
+            },'json');
+        }else {
+            code.text("重新发送(" + countdown + ")");
+            code.attr('disabled',true);
+            countdown--;
+        }
+        setTimeout(function() {
+            settime(obj) }, 1000);
+    }
+    //提交按钮判断
+    $(function(){
+        $(document).on("click","#btn",function(){
+            var form_datas = $('#form').serializeArray();
+            var can = {};
+            form_datas.forEach(function(value,index){
+                can[value.name] = value.value;
+            })
+
+            var len=can.phone.length;
+            var myreg = /^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$/;
+            if(len!=11)
+            {
+                $.toptip("手机号长度不正确", 'error');
+                $("#btn").attr("disabled","disabled");
+                $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+            if(!myreg.test(can.phone))
+            {
+                $.toptip("请填写有效的手机号", 'error');
+                $("#btn").attr("disabled","disabled");
+                $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+            if(can.password==""){
+                $.toptip('请填写密码', 'error');
+                $("#btn").attr("disabled","disabled");
+                $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+            var repassword=$("#repassword").val();
+            if(can.password!=repassword)
+            {
+                $.toptip("两次填写的密码不同", 'error');
+                $("#btn").attr("disabled","disabled");
+                $("#btn").attr("class","weui-btn weui-btn_plain-default weui-btn_plain-disabled");
+                return false;
+            }
+            //提交
+            $.post('{:url("cash/user_ajax")}',can,function(data)
+            {
+                if(data.code==200){
+                    $.toptip(data.msg,'success');
+                    setTimeout(function () {
+                        window.location.href = '{:url("cash/index")}';
+                    },800)
+                }else
+                {
+                    $.toptip(data.msg,'error');
+                    return false;
+                }
+            },'json');
+        })
+    });
+    $(function(){
+        $(document).on("focus","#phone",function(){
+            $("#btn").removeAttr("disabled");
+            $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+        })
+    });
+    $(function(){
+        $(document).on("focus","#password",function(){
+            $("#btn").removeAttr("disabled");
+            $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+        })
+    });
+    $(function(){
+        $(document).on("focus","#repassword",function(){
+            $("#btn").removeAttr("disabled");
+            $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+        })
+    });
+    $(function(){
+        $(document).on("focus","#code",function(){
+            $("#btn").removeAttr("disabled");
+            $("#btn").attr("class","weui-btn weui-btn_primary bg-blue");
+        })
+    });
+</script>
+</html>

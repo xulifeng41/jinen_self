@@ -1,0 +1,140 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px;background-color: #F1F1F1;">
+<div class="bd" style="margin-bottom: 2em;">
+    <div class="page__bd">
+        <div class="weui-cells__title">{empty name="$carts"}
+            暂无购买清单
+            {else /}
+            清单
+            {/empty}
+        </div>
+        <form action='' method="post" id="form">
+        {foreach $carts as $key=>$v }
+        <div class="weui-cells" >
+            <div class="weui-cell weui-cell_swiped">
+                <div class="weui-cell__bd">
+                    <div class="weui-cell" >
+                        <div class="weui-cell__hd">
+                            <img src="/images/good/20190724/5af60ecf051eab18fc430c06a9f41daf.jpg" alt="" style="width:80px;margin-right:5px;display:block">
+                        </div>
+                        <div class="weui-cell__bd">
+                            <p>{$v.good_name}</p>
+                            <p class="weui-media-box__desc">￥{$v.good_price}</p>
+                        </div>
+                        <div class="weui-cell__ft">
+                            <div class="weui-count">
+                                <a class="weui-count__btn weui-count__decrease"></a>
+                                <input class="weui-count__number" type="number" value="{$v.good_nums}" name="num_{$v.id}"/>
+                                <a class="weui-count__btn weui-count__increase"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="weui-cell__ft">
+                    <input type="hidden" value="{$v.id}" id="cart_id" name="cart_{$v.id}"/>
+                    <a class="weui-swiped-btn weui-swiped-btn_warn delete-swipeout" href="javascript:">删除</a>
+                    <a class="weui-swiped-btn weui-swiped-btn_default close-swipeout" href="javascript:">关闭</a>
+                </div>
+            </div>
+        </div>
+        {/foreach}
+            </form>
+    </div>
+</div>
+
+<div class="weui-flex weui-footer weui-footer_fixed-bottom" >
+    <div class="weui-flex__item">
+        <a href={:url("site/index")} class="weui-btn bg-orange" style="color: #fff;width:95%;">继续选购</a>
+    </div>
+    <div class="weui-flex__item">
+        <a href="javascript:;" id="buy_now" class="weui-btn bg-blue" style="color: #fff;width:95%;">去结算</a>
+    </div>
+</div>
+</body>
+<script src="/static/js/weui/jquery-weui.js"></script>
+<script>
+    var MAX = 99, MIN = 1;
+    $('.weui-count__decrease').click(function (e) {
+        var $input = $(e.currentTarget).parent().find('.weui-count__number');
+        var number = parseInt($input.val() || "0") - 1
+        if (number < MIN) number = MIN;
+        $input.val(number);
+    })
+    $('.weui-count__increase').click(function (e) {
+        var $input = $(e.currentTarget).parent().find('.weui-count__number');
+        var number = parseInt($input.val() || "0") + 1
+        if (number > MAX) number = MAX;
+        $input.val(number);
+    })
+
+    $('.delete-swipeout').click(function () {
+        var cart_id = $('#cart_id').val();
+        $.post('{:url("good/del_cart")}',{cart_id:cart_id},function(data)
+        {
+            if(data.code==200){
+                $.toptip(data.msg,'success');
+                $(this).parents('.weui-cell').remove();
+                setTimeout(function () {
+                    window.location.reload();
+                },800)
+            }else
+            {
+                $.toptip(data.msg,'error');
+                return false;
+            }
+        },'json');
+    })
+    $('.close-swipeout').click(function () {
+        $(this).parents('.weui-cell').swipeout('close')
+    })
+    $(function(){
+        $(document).on("click","#buy_now",function(e){
+            var carts = {php} echo $carts ;{/php};
+                if(!carts.length)
+                {
+                    $.alert("购物车为空","提示",function(){
+                        window.location.href = '{:url("site/index")}';
+                    });
+                    return false;
+                }
+            var form_datas = $('#form').serializeArray();
+            var form_data = {};
+            form_datas.forEach(function(value,index){
+                form_data[value.name] = value.value;
+            })
+            form_data.type=1;
+            //提交
+            $.post('{:url("good/update_cart")}',form_data,function(data)
+            {
+                if(data.code==200){
+                    $.toptip(data.msg,'success');
+                    setTimeout(function () {
+                        window.location.href = '{:url("order/create_order")}?cart_ids='+data.cart_ids;
+                    },800)
+                }else
+                {
+                    $.toptip('请重新尝试','error');
+                    return false;
+                }
+            },'json');
+        })
+    });
+    //页面关闭时
+    window.addEventListener('pagehide',
+        function () {
+            var form_datas = $('#form').serializeArray();
+            var form_data = {};
+            form_datas.forEach(function(value,index){
+                form_data[value.name] = value.value;
+            })
+            form_data.type=2;
+            $.ajaxSettings.async = false;
+            //提交
+            $.post('{:url("good/update_cart")}',form_data,function(data)
+            {
+
+            },'json');
+        });
+</script>
+</html>

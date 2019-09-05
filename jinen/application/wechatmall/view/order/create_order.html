@@ -1,0 +1,141 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px;background-color: #F1F1F1;">
+<div class="page-bd">
+    <div class="weui-panel weui-panel_access">
+        <div class="weui-panel__bd border  w border-radius  w" >
+            <a href={:url("user/address_list")}?type=choose&cart_ids={$cart_ids} class="weui-media-box weui-media-box_appmsg">
+
+                {empty name="add_info"}
+                <div class="weui-media-box__bd">
+                    选择地址
+                </div>
+                {else /}
+                <div class="weui-media-box__hd" >
+                    <i class="icon icon-68 f27 weui-icon-warn" ></i>
+                </div>
+                <div class="weui-media-box__bd">
+                    <h4 class="weui-media-box__title">{$add_info.phone}
+                        <div  style="float: left;">{$add_info.real_name}</div>
+                    </h4>
+                    <p class="weui-media-box__desc">{$add_info.region}{$add_info.detail_address}</p>
+                </div>
+                {/empty}
+            </a>
+        </div>
+    </div>
+    <div class="weui-form-preview">
+        <div class="weui-form-preview__bd">
+            <div class="weui-form-preview__item">
+                <label class="weui-form-preview__label">订单商品</label>
+                <span class="weui-form-preview__value" style="color: orange;"id="change_order">订单修改</span>
+            </div>
+        </div>
+        <div class="weui-form-preview__bd">
+            <div class="weui-form-preview__item">
+                <label class="weui-form-preview__label">商品</label>
+                {foreach $cart_info as $key=>$v }
+                <span class="weui-form-preview__value">{$v.good_name}x{$v.good_nums}</span>
+                {/foreach}
+            </div>
+            <div class="weui-form-preview__item">
+                <label class="weui-form-preview__label">合计</label>
+                <span class="weui-form-preview__value">{$info.total_price}</span>
+            </div>
+            <div class="weui-form-preview__item">
+                <label class="weui-form-preview__label">运费</label>
+                <span class="weui-form-preview__value">{$info.total_postage}</span>
+            </div>
+        </div>
+        <div class="weui-form-preview__hd">
+            <div class="weui-form-preview__item">
+                <label class="weui-form-preview__label">付款金额</label>
+                <em class="weui-form-preview__value">￥{$info.pay_price}</em>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="weui-flex weui-footer weui-footer_fixed-bottom" >
+    <div class="weui-flex__item">
+        <a href="javascript:;" id="pay_now" class="weui-btn bg-blue" style="color: #fff;width:95%;" onclick="callpay()">微信支付</a>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    $(function(){
+        $(document).on("click","#change_order",function(){
+            window.location.href = '{:url("good/my_cart")}';
+        })
+    });
+    //调用微信JS api 支付
+    function jsApiCall(data)
+    {
+        var json_d=JSON.parse(data);
+        WeixinJSBridge.invoke(
+            'getBrandWCPayRequest',
+            {
+                "appId":json_d.appId,     //公众号名称，由商户传入
+                "timeStamp":json_d.timeStamp,         //时间戳，自1970年以来的秒数
+                "nonceStr":json_d.nonceStr, //随机串
+                "package":json_d.package,
+                "signType":json_d.signType,         //微信签名方式：
+                "paySign":json_d.paySign //微信签名
+            },
+            function(res){
+                //alert(res.err_code+res.err_desc+res.err_msg);
+                WeixinJSBridge.log(res.err_msg);
+                if(res.err_msg == "get_brand_wcpay_request:ok"){
+                    window.location.href = '{:url("order/index")}';
+                }else{
+                    $.alert("提示","支付失败",function(){
+                        window.location.href = '{:url("order/index")}';
+                    });
+                }
+            }
+        );
+    }
+
+    function callpay()
+    {
+        if (typeof WeixinJSBridge == "undefined"){
+            if( document.addEventListener ){
+                document.addEventListener('WeixinJSBridgeReady', jsApiCall(get_json()), false);
+            }else if (document.attachEvent){
+                document.attachEvent('WeixinJSBridgeReady', jsApiCall(get_json()));
+                document.attachEvent('onWeixinJSBridgeReady', jsApiCall(get_json()));
+            }
+        }else{
+
+            jsApiCall(get_json());
+        }
+    }
+    function get_json()
+    {
+        //获取数据
+        var datas={};
+        datas.cart_ids="{$cart_ids}";
+        datas.pay_price="{$info.pay_price}";
+        datas.total_price="{$info.total_price}";
+        var user_address="{$add_info}";
+        if(user_address.length)
+        {
+            datas.user_address="{$add_info.id}";
+        }else
+        {
+            $.toptip('请选择地址','error');
+            return false;
+        }
+        $.ajaxSettings.async = false;
+        $.post('{:url("order/wxpay_now")}',datas,function(res)
+        {
+            json_data=res;
+
+        },'json');
+        return json_data;
+    }
+    function get_json1()
+    {
+        console.log(get_json());
+    }
+</script>
+</html>

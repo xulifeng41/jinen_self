@@ -15,11 +15,11 @@ return [
     // 服务器地址
     'hostname'        => '127.0.0.1',
     // 数据库名
-    'database'        => 'jinen_ip13',
+    'database'        => 'wechatmall',
     // 用户名
-    'username'        => 'jinen_ip13',
+    'username'        => 'wechatmall',
     // 密码
-    'password'        => '4c5iCG4aNdSwiJHS',
+    'password'        => 'KPNTjDDS6GFhcNYt',
     // 端口
     'hostport'        => '3306',
     // 连接dsn

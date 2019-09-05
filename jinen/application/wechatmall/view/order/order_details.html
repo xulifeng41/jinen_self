@@ -1,0 +1,54 @@
+{include file='layout/head' /}
+</head>
+<body ontouchstart style="padding: 5px">
+    <div class="page-bd">
+        <div class="weui-panel weui-panel_access">
+            <div class="weui-panel__bd border  w border-radius  w" >
+                <a href="javascript:void(0);" class="weui-media-box weui-media-box_appmsg">
+                    <div class="weui-media-box__hd" >
+                        <i class="icon icon-68 f27 weui-icon-warn" ></i>
+                    </div>
+                    <div class="weui-media-box__bd">
+                        <h4 class="weui-media-box__title">{$add_info.phone}
+                        <div  style="float: left;">{$add_info.real_name}</div>
+                        </h4>
+                        <p class="weui-media-box__desc">{$add_info.region}{$add_info.detail_address}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="weui-form-preview border  w border-radius  w">
+            <div class="weui-form-preview__hd">
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">实付金额</label>
+                    <em class="weui-form-preview__value">{$order_info.pay_price}</em>
+                </div>
+            </div>
+            <div class="weui-form-preview__bd">
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">订单号</label>
+                    <span class="weui-form-preview__value">{$order_info.order_sn}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">快递费</label>
+                    <span class="weui-form-preview__value">{$order_info.total_postage}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">订单总价</label>
+                    <span class="weui-form-preview__value">{$order_info.total_price}</span>
+                </div>
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">下单时间</label>
+                    <span class="weui-form-preview__value">{$order_info.create_time}</span>
+                </div>
+                {notempty name="pay_time"}
+                <div class="weui-form-preview__item">
+                    <label class="weui-form-preview__label">付款时间</label>
+                    <span class="weui-form-preview__value">{$pay_time}</span>
+                </div>
+                {/notempty}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

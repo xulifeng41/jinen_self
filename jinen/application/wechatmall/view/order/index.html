@@ -1,0 +1,385 @@
+{include file='layout/head' /}
+<script src="/static/js/weui/iscroll-lite.js"></script>
+</head>
+<body ontouchstart style="padding: 5px;background-color: #F1F1F1;">
+
+<div class="page-bd" style="margin-bottom:1.5rem;">
+    <div id="tagnav" class="weui-navigator weui-navigator-wrapper" style="background-color: #F1F1F1 ;">
+        <ul class="weui-navigator-list" >
+            <li><a href="javascript:;" onclick="get_list(0)">全部</a></li>
+            <li><a href="javascript:;" onclick="get_list(1)">待支付</a></li>
+            <li><a href="javascript:;" onclick="get_list(2)">待发货</a></li>
+            <li><a href="javascript:;" onclick="get_list(4)">待收货</a></li>
+            <li><a href="javascript:;" onclick="get_list(5)">已签收</a></li>
+        </ul>
+    </div>
+    <div id="load"></div>
+    <form> <input type="hidden" name="status" value="0" id="status"></form>
+    <div class="weui-loadmore" id="loading" style="display: none;">
+        <i class="weui-loading"></i>
+        <span class="weui-loadmore__tips">正在加载</span>
+    </div>
+</div>
+
+
+
+
+<script>
+    status1='0';
+    var page=1;//当前页
+    $(document).ready(get_list());
+    //滚动加载
+    var loading = false;  //状态标记 这个变量主要是用来控制触发次数，官网也有说明，事件可能会触发多次
+    $(document.body).infinite().on("infinite", function() {
+        $("#loading").css("display","block");//显示 加载中图标
+        if(loading) return;
+        loading = true;
+        if(page<=countPage){
+            status=status1?status1:0;
+            get_list(status);
+            // get_list();
+        }else{
+            $(document.body).destroyInfinite();//到最后一页时，销毁它
+            $("#loading>i").css("display","none");
+            $("#loading>span").html("已经没有数据/啦~").css("color","#BDBDBD");
+            $("#loading>span").html("");
+        }
+    });
+    var countPage=1;//总页数
+
+    // // //获取数据
+    function get_list(status){
+        // $.ajaxSettings.async = false;
+        status1=status?status:0;
+        var compare=$('#status').val();
+        if(status1!=compare)
+        {
+            page=1;
+            $("#load").html('');
+        }
+        $.post('{:url("order/order_list")}',{page:page,status:status1},function(data)
+        {
+            if(data[1].length)
+            {
+                console.log(countPage);
+                $("#loading").css("display","inline");
+                //     //这里计算出总页数。。一般是后台给的
+                    countPage=data.maxpage;
+                //     //     //处理数据部分 .......
+                    var str='';
+                    var str1='';
+                    var str2='';
+                    var str3='';
+                    var str4='';
+                    for (var i = 0; i < data[1].length; i++) {
+                        switch(data[1][i].order_status)
+                        {
+                            case 1:
+                                str1='待支付';
+                                str3='去支付';
+                                str4='取消订单';
+                                break;
+                            case 2:
+                                str1='待发货';
+                                str3='申请退款';
+                                str4='';
+                                break;
+                            case 3:
+                                str1='取消订单';
+                                str3="";
+                                str4="";
+                                break;
+                            case 4:
+                                str1='已发货';
+                                str3='查看物流';
+                                str4='确认收货';
+                                break;
+                            case 5:
+                                str1='已签收';
+                                str3='申请换货';
+                                str4='退货退款';
+                                break;
+                            case 6:
+                                str1='交易成功';
+                                str3="";
+                                str4="";
+                                break;
+                            case 7:
+                                str1='申请退款中';
+                                str3="";
+                                str4="";
+                                break;
+                            case 8:
+                                str1='申请退货退款中';
+                                str3="";
+                                str4="";
+                                break;
+                            case 9:
+                                str1='申请换货中';
+                                str3="";
+                                str4="";
+                                break;
+                            case 10:
+                                str1='同意申请,退换货时地址请与客服联系';
+                                str3="";
+                                str4="";
+                                break;
+                            case 11:
+                                str1='卖家确认收货,正在处理';
+                                str3="";
+                                str4="";
+                                break;
+                            case 12:
+                                str1='卖家已退款';
+                                str3="";
+                                str4="";
+                                break;
+                            case 14:
+                                str1='卖家拒绝此申请';
+                                str3="";
+                                str4="";
+                                break;
+                            default:
+                                str1="";
+                                str3="";
+                                str4="";
+                                break;
+                        }
+                        if(str4.length)
+                        {
+                            str2="<a href=\"javascript:;\" onclick=change("+data[1][i].id+","+data[1][i].order_status+",1) class=\"label f-white bg-blue\">"+str3+"</a>"+
+                                "<a href=\"javascript:;\" onclick=change("+data[1][i].id+","+data[1][i].order_status+",2) class=\"label f-white bg-orange\">"+str4+"</a>";
+                        }else if(str3.length&&!str4.length)
+                        {
+                            str2="<a href=\"javascript:;\" onclick=change("+data[1][i].id+","+data[1][i].order_status+",1) class=\"label f-white bg-blue\">"+str3+"</a>";
+                        }else
+                        {
+                            str2="";
+                        }
+                            str+=
+                                "<div class=\"weui-cells__title border-radius w\" style=\"margin-bottom: -0.9em;background-color: #FFF;\">" +
+                                    "<div class=\"weui-cell\">" +
+                                        "<div class=\"weui-cell__bd\">" +
+                                        "<p>单号:"+data[1][i].order_sn+"</p>\n" +
+                                        "</div>" +
+                                        "<div class=\"weui-cell__ft\" style=\"color: orange;\">" +
+                                        str1 +
+                                        "</div>" +
+                                    "</div>" +
+                                "</div>" +
+                                "<div class=\"weui-panel weui-panel_access\">" +
+                                    "<div class=\"weui-panel__bd border-radius w\">" +
+                                        "<a href={:url(\"order/order_details\")}?id="+data[1][i].id+" class=\"weui-media-box weui-media-box_appmsg  \">" +
+                                            "<div class=\"weui-media-box__hd\">" +
+                                            "<img class=\"weui-media-box__thumb\" src="+data[1][i].good_img+" alt=\"\">" +
+                                            "</div>" +
+                                            "<div class=\"weui-media-box__bd\">" +
+                                            "<h4 class=\"weui-media-box__title\">"+data[1][i].good_name+" "+
+                                            "<div style=\"float: right\">"+data[1][i].good_price+"</div>" +
+                                            "<p class=\"weui-media-box__desc weui-cell__ft\">x"+data[1][i].good_nums+"</p>" +
+                                            "</h4>" +
+                                            "<p class=\"weui-media-box__desc\">"+data[1][i].good_info+"</p>" +
+                                            "</div>" +
+                                        "</a>" +
+                                        "<div class=\"weui-cell__ft\" style=\"color:#000\">共"+data[1][i].good_nums+"件商品,合计:￥"+data[1][i].total_price+"元</div>" +
+                                "<div class=\"weui-cell__ft page-bd-15\">"+
+                                "<div class=\"weui-label-list\" style=\"margin:0;\">"+
+                                str2+
+                                "</div>"+
+                                "</div>"+
+                                    "</div>" +
+                                "</div>";
+                        }
+                    $("#load").append(str);
+                    loading = false;//会多次触发，所以 需要请求完成数据 才能继续触发
+
+                    $("#loading").css("display","none");//数据加载完隐藏加载提示
+            }else
+                {
+                    str="<div class=\"weui-msgbox\" id=\"s3\">"+
+                            "<p>"+
+                            "<i class=\"weui-icon-info-circle\"></i>暂无相关订单"+
+                            "</p>"+
+                        "</div>";
+                    $("#load").html(str);
+                    $("#loading").html("");
+                }
+
+        },'json')
+        $('#status').val(status1);
+        page++;
+    }
+    var def=0;
+    if(status1==4)
+    {
+        def=3;
+    }else if(status==6)
+    {
+        def=4;
+    }
+    $(function(){
+        TagNav('#tagnav',{
+            type: 'scrollToNext',
+            curClassName: 'weui-state-active',
+            index:def
+        });
+    })
+    function change(order_id,order_status,type) {
+        var datas={};
+        datas.order_id=order_id;
+        datas.order_status=order_status;
+        datas.type=type;
+        switch(order_status)
+        {
+            case 1:
+                if(type==2)
+                {
+                    datas.str='是否取消订单';
+                    datas.type_alert=1;
+                    step_one(datas);
+                }else if(type==1)
+                    {
+                        callpay(datas);
+                        // console.log(get_json(datas));
+                    }
+                break;
+            case 2:
+                if(type==1)
+                {
+                    datas.str='申请退款';
+                    datas.str1='填写退款原因';
+                    datas.type_alert=2;
+                    step_one(datas);
+                }
+                break;
+            case 4:
+                if(type==1)
+                {
+                    datas.type_alert=3;
+                    step_one(datas);
+                }else if(type==2)
+                {
+                    datas.str='是否确认收货';
+                    datas.type_alert=1;
+                    step_one(datas);
+                }
+                break;
+            case 5:
+                if(type==1)
+                {
+                    datas.str='换货';
+                    datas.str1='填写换货原因';
+                    datas.type_alert=2;
+                    step_one(datas);
+                }else if(type==2)
+                {
+                    datas.str='退款退货';
+                    datas.str1='填写原因';
+                    datas.type_alert=2;
+                    step_one(datas);
+                }
+                break;
+        }
+    }
+    function step_one(datas) {
+        if(datas.type_alert==1)
+        {
+            $.confirm(datas.str, function() {
+                step_two(datas);
+            }, function() {
+            });
+        }else if(datas.type_alert==2)
+        {
+            $.prompt({
+                title: datas.str,
+                text: datas.str1,
+                input: '',
+                empty: false, // 是否允许为空
+                onOK: function (input) {
+                    datas.reason=input;
+                    step_two(datas);
+                },
+                onCancel: function () {
+                }
+            });
+        }else
+        {
+            step_two(datas);
+        }
+    }
+    function step_two(datas) {
+        $.post('{:url("order/progress")}',datas,function(res)
+        {
+            if(res.code==200){
+                $.toptip(res.msg,'success');
+                // $.toast(data.msg);
+                setTimeout(function () {
+                    if(datas.order_status==4&&datas.type==1)
+                    {
+                        window.location.href = res.url;
+                    }else
+                    {
+                        window.location.href = '{:url("res.url")}';
+                    }
+                },800)
+            }else
+            {
+                $.toptip(res.msg,'error');
+                return false;
+            }
+        },'json')
+    }
+    //调用微信JS api 支付
+    function jsApiCall(data)
+    {
+        var json_d=JSON.parse(data);
+        WeixinJSBridge.invoke(
+            'getBrandWCPayRequest',
+            {
+                "appId":json_d.appId,     //公众号名称，由商户传入
+                "timeStamp":json_d.timeStamp,         //时间戳，自1970年以来的秒数
+                "nonceStr":json_d.nonceStr, //随机串
+                "package":json_d.package,
+                "signType":json_d.signType,         //微信签名方式：
+                "paySign":json_d.paySign //微信签名
+            },
+            function(res){
+                //alert(res.err_code+res.err_desc+res.err_msg);
+                WeixinJSBridge.log(res.err_msg);
+                if(res.err_msg == "get_brand_wcpay_request:ok"){
+                    window.location.href = '{:url("order/index")}';
+                }else{
+                    $.alert("提示","支付失败",function(){
+                        window.location.href = '{:url("order/index")}';
+                    });
+                }
+            }
+        );
+    }
+
+    function callpay(datas)
+    {
+        if (typeof WeixinJSBridge == "undefined"){
+            if( document.addEventListener ){
+                document.addEventListener('WeixinJSBridgeReady', jsApiCall(get_json(datas)), false);
+            }else if (document.attachEvent){
+                document.attachEvent('WeixinJSBridgeReady', jsApiCall(get_json(datas)));
+                document.attachEvent('onWeixinJSBridgeReady', jsApiCall(get_json(datas)));
+            }
+        }else{
+
+            jsApiCall(get_json(datas));
+        }
+    }
+    function get_json(datas)
+    {
+        //获取数据
+        $.ajaxSettings.async = false;
+        $.post('{:url("order/progress")}',datas,function(res)
+        {
+            json_data=res;
+        },'json');
+        return json_data;
+    }
+</script>
+{include file='layout/footer2' /}
